@@ -1,0 +1,78 @@
+{
+  "status": "available",
+  "snapshot_id": "example-snapshot-id",
+  "snapshot": {
+    "snapshot_id": "example-snapshot-id",
+    "created_at_utc": "2026-06-16T00:00:00Z",
+    "input_summary": {
+      "item_id": "ITEM-001",
+      "location_id": "BRANCH-001",
+      "stock_available": 16,
+      "movement_count": 2,
+      "supplier_lead_time_days": 5,
+      "environment": "TRAINING"
+    },
+    "forecast": {
+      "item_id": "ITEM-001",
+      "location_id": "BRANCH-001",
+      "forecast_horizon_days": 30,
+      "forecast_quantity": 45.0,
+      "average_daily_demand": 1.5,
+      "method": "simple_moving_average",
+      "environment": "TRAINING"
+    },
+    "risk": {
+      "item_id": "ITEM-001",
+      "location_id": "BRANCH-001",
+      "days_of_cover": 10.67,
+      "stockout_risk": "Medium",
+      "overstock_risk": "Low",
+      "estimated_stockout_date": "2026-06-27",
+      "environment": "TRAINING"
+    },
+    "recommendation": {
+      "item_id": "ITEM-001",
+      "location_id": "BRANCH-001",
+      "reorder_needed": true,
+      "suggested_reorder_quantity": 36,
+      "urgency": "Medium",
+      "supplier_lead_time_days": 5,
+      "environment": "TRAINING"
+    },
+    "confidence": {
+      "rating": "Medium",
+      "score": 65.0,
+      "reasons": [
+        "Movement history and supplier inputs are sufficient for Phase 1."
+      ]
+    },
+    "explanation": {
+      "summary": "Demand forecast is based on recent sales-equivalent movements and current available stock.",
+      "drivers": [
+        "Recent sales-equivalent movements were used for demand estimation.",
+        "Available stock and supplier lead time were used for risk and reorder guidance."
+      ],
+      "warnings": []
+    },
+    "audit_event": {
+      "event_id": "example-audit-event-id",
+      "event_type": "FORECAST_CREATED",
+      "actor": "item_details_panel",
+      "timestamp_utc": "2026-06-16T00:00:00Z",
+      "environment": "TRAINING",
+      "item_id": "ITEM-001",
+      "location_id": "BRANCH-001",
+      "details": {
+        "method": "simple_moving_average",
+        "advisory_only": true
+      }
+    }
+  },
+  "advisory": {
+    "advisory_only": true,
+    "inventory_ledger_source_of_truth": true,
+    "mutates_stock": false,
+    "creates_purchase_order": false,
+    "approves_purchase_order": false
+  }
+}
