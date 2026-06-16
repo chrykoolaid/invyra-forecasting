@@ -7,7 +7,7 @@ from invyra_forecasting.config import ForecastingConfig
 from invyra_forecasting.constants import Environment
 
 
-def test_accuracy_metrics_rate_on_target_forecast_high():
+def test_accuracy_metrics_rate_near_forecast_high():
     result = calculate_accuracy_metrics(
         forecast_quantity=21,
         actual_quantity=23,
@@ -20,9 +20,24 @@ def test_accuracy_metrics_rate_on_target_forecast_high():
     )
     assert result.absolute_error == 2
     assert result.accuracy_rating == "High"
-    assert result.bias == "On Target"
+    assert result.bias == "Under Forecast"
     assert result.mean_absolute_error == 2
     assert result.mean_absolute_percentage_error is not None
+
+
+def test_accuracy_metrics_classifies_on_target_within_five_percent():
+    result = calculate_accuracy_metrics(
+        forecast_quantity=22,
+        actual_quantity=23,
+        item_id="ITEM-001",
+        location_id="LOC-001",
+        environment=Environment.TRAINING,
+        forecast_horizon_days=7,
+        actual_record_count=7,
+        forecast_snapshot_id="snapshot-2",
+    )
+    assert result.accuracy_rating == "High"
+    assert result.bias == "On Target"
 
 
 def test_accuracy_service_persists_and_reads_item_results(tmp_path):
