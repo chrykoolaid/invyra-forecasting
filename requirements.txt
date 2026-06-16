@@ -1,0 +1,5 @@
+# Core Phase 1 intentionally uses Python standard library only.
+# Optional API/dev dependencies:
+fastapi>=0.115.0
+uvicorn>=0.30.0
+pytest>=8.0.0

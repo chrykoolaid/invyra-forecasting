@@ -1,0 +1,38 @@
+from enum import StrEnum
+
+
+class Environment(StrEnum):
+    LIVE = "LIVE"
+    TRAINING = "TRAINING"
+    TEST = "TEST"
+
+
+class MovementType(StrEnum):
+    SALE = "SALE"
+    POS_SALE = "POS_SALE"
+    WASTAGE = "WASTAGE"
+    MARKDOWN_SALE = "MARKDOWN_SALE"
+    RECEIPT = "RECEIPT"
+    TRANSFER_IN = "TRANSFER_IN"
+    TRANSFER_OUT = "TRANSFER_OUT"
+    ADJUSTMENT_IN = "ADJUSTMENT_IN"
+    ADJUSTMENT_OUT = "ADJUSTMENT_OUT"
+    STOCKTAKE_VARIANCE = "STOCKTAKE_VARIANCE"
+    GAP_SCAN_CAPTURE = "GAP_SCAN_CAPTURE"
+    FLOOR_SCAN_CAPTURE = "FLOOR_SCAN_CAPTURE"
+
+
+SALES_EQUIVALENT_MOVEMENTS = {
+    MovementType.SALE,
+    MovementType.POS_SALE,
+    MovementType.WASTAGE,
+    MovementType.MARKDOWN_SALE,
+    MovementType.TRANSFER_OUT,
+    MovementType.ADJUSTMENT_OUT,
+}
+
+INBOUND_MOVEMENTS = {
+    MovementType.RECEIPT,
+    MovementType.TRANSFER_IN,
+    MovementType.ADJUSTMENT_IN,
+}

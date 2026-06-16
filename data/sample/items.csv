@@ -1,0 +1,3 @@
+item_id,sku,name,category,unit_of_measure,minimum_order_quantity
+ITEM-001,SKU-COFFEE-250,Coffee Beans 250g,Grocery,unit,6
+ITEM-002,SKU-MILK-1L,Milk 1L,Chilled,unit,12
