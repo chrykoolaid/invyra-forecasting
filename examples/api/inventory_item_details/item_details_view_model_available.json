@@ -1,0 +1,118 @@
+{
+  "component": "InventoryItemDetailsForecastPanel",
+  "status": "available",
+  "title": "Forecast intelligence",
+  "subtitle": "Forecasting is advisory. Inventory ledger remains the source of truth.",
+  "item_id": "ITEM-001",
+  "location_id": "BRANCH-001",
+  "environment": "TRAINING",
+  "status_chip": {
+    "label": "Medium",
+    "tone": "warning"
+  },
+  "fields": [
+    {
+      "key": "forecast_demand_next_30_days",
+      "label": "Forecast demand next 30 days",
+      "value": 45.0,
+      "helper": "Expected demand for the configured forecast window.",
+      "emphasis": "normal"
+    },
+    {
+      "key": "average_daily_demand",
+      "label": "Average daily demand",
+      "value": 1.5,
+      "helper": "Average recent sales-equivalent demand per day.",
+      "emphasis": "normal"
+    },
+    {
+      "key": "days_of_cover",
+      "label": "Days of cover",
+      "value": 10.67,
+      "helper": "Estimated days available stock can cover demand.",
+      "emphasis": "normal"
+    },
+    {
+      "key": "stockout_risk",
+      "label": "Stockout risk",
+      "value": "Medium",
+      "helper": "Advisory risk based on demand and available stock.",
+      "emphasis": "normal",
+      "chip": {
+        "label": "Medium",
+        "tone": "warning"
+      }
+    },
+    {
+      "key": "overstock_risk",
+      "label": "Overstock risk",
+      "value": "Low",
+      "helper": "Advisory risk based on demand and available stock.",
+      "emphasis": "normal",
+      "chip": {
+        "label": "Low",
+        "tone": "success"
+      }
+    },
+    {
+      "key": "suggested_reorder_quantity",
+      "label": "Suggested reorder quantity",
+      "value": 36,
+      "helper": "Advisory quantity only. Does not create or approve a purchase order.",
+      "emphasis": "normal"
+    },
+    {
+      "key": "confidence_rating",
+      "label": "Confidence",
+      "value": "Medium",
+      "helper": "Confidence based on movement history, stock quality, and supplier inputs.",
+      "emphasis": "normal",
+      "chip": {
+        "label": "Medium",
+        "tone": "warning"
+      }
+    },
+    {
+      "key": "short_explanation",
+      "label": "Explanation",
+      "value": "Demand forecast is based on recent sales-equivalent movements and current available stock.",
+      "helper": "Plain-language reason for the forecast.",
+      "emphasis": "normal"
+    }
+  ],
+  "warnings": [],
+  "snapshot": {
+    "available": true,
+    "snapshot_id": "example-snapshot-id",
+    "label": "View forecast evidence",
+    "generated_at_utc": "2026-06-16T00:00:00Z"
+  },
+  "actions": {
+    "refresh_forecast_visible": true,
+    "view_snapshot_visible": true,
+    "manual_review_visible": true,
+    "create_purchase_order_visible": false,
+    "approve_purchase_order_visible": false,
+    "stock_adjustment_visible": false
+  },
+  "fallback": {
+    "item_details_usable": true,
+    "stock_history_usable": true,
+    "manual_review_available": true
+  },
+  "guardrails": {
+    "advisory_only": true,
+    "inventory_ledger_source_of_truth": true,
+    "mutates_stock": false,
+    "creates_purchase_order": false,
+    "approves_purchase_order": false,
+    "notice": "Forecasting is advisory. Inventory ledger remains the source of truth."
+  },
+  "rendering_rules": {
+    "show_raw_model_internals": false,
+    "show_raw_movement_rows": false,
+    "duplicate_stock_history": false,
+    "duplicate_reorder_review": false,
+    "block_item_details_on_forecast_failure": false
+  }
+}
