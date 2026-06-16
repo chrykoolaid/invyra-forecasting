@@ -1,0 +1,39 @@
+{
+  "panel": "inventory_item_details_forecast",
+  "status": "low_confidence",
+  "environment": "TRAINING",
+  "item_id": "ITEM-001",
+  "location_id": "BRANCH-001",
+  "generated_at_utc": "2026-06-16T00:00:00Z",
+  "snapshot_id": "example-low-confidence-snapshot-id",
+  "snapshot_persisted": true,
+  "display_fields": {
+    "forecast_demand_next_30_days": 45.0,
+    "average_daily_demand": 1.5,
+    "days_of_cover": 10.67,
+    "stockout_risk": "Medium",
+    "overstock_risk": "Low",
+    "suggested_reorder_quantity": 36,
+    "confidence_rating": "Low",
+    "confidence_score": 35.0,
+    "short_explanation": "Forecast is visible, but confidence is low because source data quality or supplier lead time stability needs review.",
+    "last_snapshot_id": "example-low-confidence-snapshot-id",
+    "generated_at_utc": "2026-06-16T00:00:00Z"
+  },
+  "warnings": [
+    "Limited sales-equivalent movement history.",
+    "Low confidence forecast. Verify movement history, stock accuracy, and supplier lead time before acting."
+  ],
+  "advisory": {
+    "advisory_only": true,
+    "inventory_ledger_source_of_truth": true,
+    "mutates_stock": false,
+    "creates_purchase_order": false,
+    "approves_purchase_order": false
+  },
+  "fallback": {
+    "item_details_usable": true,
+    "stock_history_usable": true,
+    "manual_review_available": true
+  }
+}
