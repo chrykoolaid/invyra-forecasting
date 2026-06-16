@@ -1,0 +1,29 @@
+{
+  "panel": "inventory_item_details_forecast",
+  "status": "unavailable",
+  "environment": "TRAINING",
+  "item_id": "ITEM-001",
+  "location_id": "BRANCH-001",
+  "generated_at_utc": null,
+  "snapshot_id": null,
+  "snapshot_persisted": false,
+  "display_fields": null,
+  "message": "Forecast unavailable. Item Details and stock history remain usable.",
+  "reason": "stock_position environment mismatch: expected TRAINING, got LIVE",
+  "warnings": [
+    "Forecast intelligence could not be generated for this item."
+  ],
+  "recommended_action": "Use existing Item Details and Stock History, then retry forecasting after source data is corrected.",
+  "advisory": {
+    "advisory_only": true,
+    "inventory_ledger_source_of_truth": true,
+    "mutates_stock": false,
+    "creates_purchase_order": false,
+    "approves_purchase_order": false
+  },
+  "fallback": {
+    "item_details_usable": true,
+    "stock_history_usable": true,
+    "manual_review_available": true
+  }
+}
