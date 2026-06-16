@@ -18,7 +18,9 @@ env/
 !.env.example
 data/snapshots/*.json
 data/snapshots/*.jsonl
+data/reports/*
 !data/snapshots/.gitkeep
+!data/reports/.gitkeep
 .vscode/
 .idea/
 .DS_Store
