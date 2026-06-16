@@ -14,6 +14,7 @@ class ForecastingConfig:
     snapshot_dir: str = "data/snapshots"
     audit_log_path: str = "data/snapshots/audit_events.jsonl"
     accuracy_log_path: str = "data/snapshots/accuracy_events.jsonl"
+    report_export_dir: str = "data/reports"
     confidence_accuracy_window: int = 10
 
     @classmethod
@@ -24,5 +25,6 @@ class ForecastingConfig:
             snapshot_dir=os.getenv("INVYRA_FORECAST_SNAPSHOT_DIR", "data/snapshots"),
             audit_log_path=os.getenv("INVYRA_AUDIT_LOG_PATH", "data/snapshots/audit_events.jsonl"),
             accuracy_log_path=os.getenv("INVYRA_ACCURACY_LOG_PATH", "data/snapshots/accuracy_events.jsonl"),
+            report_export_dir=os.getenv("INVYRA_REPORT_EXPORT_DIR", "data/reports"),
             confidence_accuracy_window=int(os.getenv("INVYRA_CONFIDENCE_ACCURACY_WINDOW", "10")),
         )
