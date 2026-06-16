@@ -1,0 +1,36 @@
+{
+  "panel": "inventory_item_details_forecast",
+  "status": "available",
+  "environment": "TRAINING",
+  "item_id": "ITEM-001",
+  "location_id": "BRANCH-001",
+  "generated_at_utc": "2026-06-16T00:00:00Z",
+  "snapshot_id": "example-snapshot-id",
+  "snapshot_persisted": true,
+  "display_fields": {
+    "forecast_demand_next_30_days": 45.0,
+    "average_daily_demand": 1.5,
+    "days_of_cover": 10.67,
+    "stockout_risk": "Medium",
+    "overstock_risk": "Low",
+    "suggested_reorder_quantity": 36,
+    "confidence_rating": "Medium",
+    "confidence_score": 65.0,
+    "short_explanation": "Demand forecast is based on recent sales-equivalent movements and current available stock.",
+    "last_snapshot_id": "example-snapshot-id",
+    "generated_at_utc": "2026-06-16T00:00:00Z"
+  },
+  "warnings": [],
+  "advisory": {
+    "advisory_only": true,
+    "inventory_ledger_source_of_truth": true,
+    "mutates_stock": false,
+    "creates_purchase_order": false,
+    "approves_purchase_order": false
+  },
+  "fallback": {
+    "item_details_usable": true,
+    "stock_history_usable": true,
+    "manual_review_available": true
+  }
+}
