@@ -3,9 +3,10 @@ from __future__ import annotations
 from datetime import date
 from pathlib import Path
 
+from invyra_forecasting.accuracy import JsonlAccuracyStore
 from invyra_forecasting.audit import JsonlAuditStore, create_forecast_audit_event
 from invyra_forecasting.config import ForecastingConfig
-from invyra_forecasting.confidence import score_confidence
+from invyra_forecasting.confidence import recalibrate_confidence_with_accuracy, score_confidence
 from invyra_forecasting.data.repositories import FileSnapshotRepository
 from invyra_forecasting.data.validation import validate_forecast_input
 from invyra_forecasting.explanation import build_explanation
@@ -22,6 +23,7 @@ class ForecastingService:
         self.config = config or ForecastingConfig()
         self.snapshot_repository = FileSnapshotRepository(self.config.snapshot_dir)
         self.audit_store = JsonlAuditStore(self.config.audit_log_path)
+        self.accuracy_store = JsonlAccuracyStore(self.config.accuracy_log_path)
 
     def run_item_forecast(
         self,
@@ -36,7 +38,14 @@ class ForecastingService:
         forecast = forecaster.forecast(bundle, anchor_date=anchor_date)
         risk = score_inventory_risk(bundle, forecast, self.config.target_cover_days, anchor_date=anchor_date)
         recommendation = build_reorder_recommendation(bundle, forecast, risk, self.config.safety_stock_days, self.config.target_cover_days)
-        confidence = score_confidence(bundle, self.config.demand_lookback_days, anchor_date=anchor_date)
+        base_confidence = score_confidence(bundle, self.config.demand_lookback_days, anchor_date=anchor_date)
+        accuracy_history = self.accuracy_store.list_results(
+            limit=self.config.confidence_accuracy_window,
+            item_id=bundle.item.item_id,
+            location_id=bundle.location.location_id,
+            environment=bundle.environment,
+        )
+        confidence = recalibrate_confidence_with_accuracy(base_confidence, accuracy_history, self.config.confidence_accuracy_window)
         explanation = build_explanation(bundle, forecast, risk, recommendation, confidence)
         audit_event = create_forecast_audit_event(actor, bundle.environment, bundle.item.item_id, bundle.location.location_id, {"method": forecast.method, "advisory_only": True})
         snapshot = ForecastSnapshot.create(

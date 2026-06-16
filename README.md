@@ -29,6 +29,7 @@ Forecasting must assist decisions without cluttering staff workflows or replacin
 - Forecast snapshot
 - Audit event
 - Forecast accuracy evaluation
+- Accuracy-informed confidence recalibration
 
 ## Governance
 
@@ -86,7 +87,7 @@ Phase 1 routes:
 - `POST /accuracy/evaluate`
 - `GET /accuracy/item/{item_id}`
 
-The forecast, risk, and reorder endpoints call the real Python forecasting service through typed API payload contracts. Snapshot, audit, and accuracy endpoints provide Phase 1D/1E readback and traceability.
+The forecast, risk, and reorder endpoints call the real Python forecasting service through typed API payload contracts. Snapshot, audit, accuracy, and confidence recalibration foundations provide traceability and proof of forecast quality.
 
 ## API Examples
 

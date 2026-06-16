@@ -28,6 +28,12 @@ Forecast actuals input, forecast-vs-actual comparison, MAE/MAPE-style baseline m
 
 This phase starts the proof layer for forecast quality over time without introducing advanced ML or MLOps yet.
 
+## Phase 1F — Confidence Recalibration Foundation
+
+Historical forecast accuracy now feeds back into confidence scoring. Weak accuracy history reduces confidence, strong history can strengthen confidence, and repeated bias lowers confidence.
+
+This keeps forecast confidence honest before recommendations are surfaced more deeply in Inventory, Reorder Review, Purchasing, Dashboard, and Reports.
+
 ## Phase 2 — Inventory Integration Hardening
 
 Integrate with real Invyra Inventory item master and stock movement ledger. Add item details forecast section contracts, dashboard risk summaries, and audit-backed manager override workflow.

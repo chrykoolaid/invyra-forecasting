@@ -20,12 +20,17 @@ app = FastAPI(title="Invyra Forecasting Engine", version=__version__, descriptio
 
 
 def _config_from_request(request: ForecastRequest) -> ForecastingConfig:
+    env_config = ForecastingConfig.from_env()
     return ForecastingConfig(
         environment=request.environment,
         forecast_horizon_days=request.forecast_horizon_days,
         demand_lookback_days=request.demand_lookback_days,
         target_cover_days=request.target_cover_days,
         safety_stock_days=request.safety_stock_days,
+        snapshot_dir=env_config.snapshot_dir,
+        audit_log_path=env_config.audit_log_path,
+        accuracy_log_path=env_config.accuracy_log_path,
+        confidence_accuracy_window=env_config.confidence_accuracy_window,
     )
 
 
