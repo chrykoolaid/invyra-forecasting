@@ -15,6 +15,8 @@ bash examples/api/curl_stockout_risk.sh
 bash examples/api/curl_reorder_recommendation.sh
 bash examples/api/curl_override_audit.sh
 bash examples/api/curl_get_audit_events.sh
+bash examples/api/curl_accuracy_evaluate.sh
+bash examples/api/curl_get_item_accuracy.sh
 ```
 
 Windows PowerShell:

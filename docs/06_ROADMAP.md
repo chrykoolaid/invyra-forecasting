@@ -22,6 +22,12 @@ File-backed forecast snapshot repository, snapshot readback endpoint, JSONL audi
 
 This phase strengthens traceability before deeper Inventory, Reorder Review, Purchasing, Dashboard, and Reports integration.
 
+## Phase 1E — Forecast Accuracy Tracking Foundation
+
+Forecast actuals input, forecast-vs-actual comparison, MAE/MAPE-style baseline metrics, accuracy scoring, JSONL accuracy event persistence, and API readback by item.
+
+This phase starts the proof layer for forecast quality over time without introducing advanced ML or MLOps yet.
+
 ## Phase 2 — Inventory Integration Hardening
 
 Integrate with real Invyra Inventory item master and stock movement ledger. Add item details forecast section contracts, dashboard risk summaries, and audit-backed manager override workflow.

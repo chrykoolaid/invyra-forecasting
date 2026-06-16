@@ -1,0 +1,5 @@
+{
+  "fixture_purpose": "Reports forecast-vs-actual accuracy evaluation",
+  "route": "POST /accuracy/evaluate",
+  "payload_file": "data/sample/api/accuracy_evaluate_request.json"
+}

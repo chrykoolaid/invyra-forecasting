@@ -13,6 +13,7 @@ class ForecastingConfig:
     safety_stock_days: int = 3
     snapshot_dir: str = "data/snapshots"
     audit_log_path: str = "data/snapshots/audit_events.jsonl"
+    accuracy_log_path: str = "data/snapshots/accuracy_events.jsonl"
 
     @classmethod
     def from_env(cls) -> "ForecastingConfig":
@@ -21,4 +22,5 @@ class ForecastingConfig:
             environment=Environment(env),
             snapshot_dir=os.getenv("INVYRA_FORECAST_SNAPSHOT_DIR", "data/snapshots"),
             audit_log_path=os.getenv("INVYRA_AUDIT_LOG_PATH", "data/snapshots/audit_events.jsonl"),
+            accuracy_log_path=os.getenv("INVYRA_ACCURACY_LOG_PATH", "data/snapshots/accuracy_events.jsonl"),
         )

@@ -17,6 +17,7 @@ env/
 .env.*
 !.env.example
 data/snapshots/*.json
+data/snapshots/*.jsonl
 !data/snapshots/.gitkeep
 .vscode/
 .idea/

@@ -1,0 +1,20 @@
+{
+  "actor": "reports-accuracy-review",
+  "forecast_snapshot_id": "sample-snapshot-id",
+  "item_id": "ITEM-001",
+  "location_id": "LOC-001",
+  "environment": "TRAINING",
+  "forecast_horizon_days": 7,
+  "forecast_quantity": 21,
+  "persist": false,
+  "notes": "Sample Phase 1E accuracy evaluation payload.",
+  "actuals": [
+    {"item_id": "ITEM-001", "location_id": "LOC-001", "actual_date": "2026-06-17", "quantity": 3, "environment": "TRAINING"},
+    {"item_id": "ITEM-001", "location_id": "LOC-001", "actual_date": "2026-06-18", "quantity": 3, "environment": "TRAINING"},
+    {"item_id": "ITEM-001", "location_id": "LOC-001", "actual_date": "2026-06-19", "quantity": 4, "environment": "TRAINING"},
+    {"item_id": "ITEM-001", "location_id": "LOC-001", "actual_date": "2026-06-20", "quantity": 3, "environment": "TRAINING"},
+    {"item_id": "ITEM-001", "location_id": "LOC-001", "actual_date": "2026-06-21", "quantity": 3, "environment": "TRAINING"},
+    {"item_id": "ITEM-001", "location_id": "LOC-001", "actual_date": "2026-06-22", "quantity": 3, "environment": "TRAINING"},
+    {"item_id": "ITEM-001", "location_id": "LOC-001", "actual_date": "2026-06-23", "quantity": 4, "environment": "TRAINING"}
+  ]
+}

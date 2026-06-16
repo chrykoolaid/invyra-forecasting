@@ -6,6 +6,8 @@ except ImportError as exc:  # pragma: no cover
     raise RuntimeError("FastAPI is optional. Install API dependencies with: pip install -e '.[api]'") from exc
 
 from invyra_forecasting import __version__
+from invyra_forecasting.accuracy import AccuracyService, AccuracyValidationError
+from invyra_forecasting.api.accuracy_contracts import AccuracyEvaluationRequest
 from invyra_forecasting.api.contracts import BatchForecastRequest, ForecastRequest, OverrideAuditRequest
 from invyra_forecasting.api.serializers import to_primitive
 from invyra_forecasting.audit import JsonlAuditStore, create_override_audit_event
@@ -86,3 +88,28 @@ def audit_override(payload: OverrideAuditRequest) -> dict:
     event = create_override_audit_event(payload.actor, payload.environment, payload.item_id, payload.location_id, payload.original_recommendation, payload.override_action, payload.reason)
     JsonlAuditStore(ForecastingConfig.from_env().audit_log_path).append(event)
     return {"audit_event": to_primitive(event)}
+
+
+@app.post("/accuracy/evaluate")
+def evaluate_accuracy(payload: AccuracyEvaluationRequest) -> dict:
+    try:
+        result = AccuracyService(ForecastingConfig.from_env()).evaluate(
+            item_id=payload.item_id,
+            location_id=payload.location_id,
+            environment=payload.environment,
+            forecast_quantity=payload.forecast_quantity,
+            actuals=payload.to_actuals(),
+            forecast_horizon_days=payload.forecast_horizon_days,
+            forecast_snapshot_id=payload.forecast_snapshot_id,
+            persist=payload.persist,
+            details={"actor": payload.actor, "notes": payload.notes},
+        )
+    except AccuracyValidationError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return {"accuracy": to_primitive(result)}
+
+
+@app.get("/accuracy/item/{item_id}")
+def get_item_accuracy(item_id: str, location_id: str | None = None, environment: str | None = None, limit: int = 100) -> dict:
+    results = AccuracyService(ForecastingConfig.from_env()).list_item_accuracy(item_id=item_id, location_id=location_id, environment=environment, limit=limit)
+    return {"count": len(results), "results": results}
