@@ -1,0 +1,5 @@
+{
+  "fixture_purpose": "Dashboard stockout/overstock/confidence summary cards",
+  "route": "POST /forecasts/batch",
+  "payload_file": "data/sample/api/batch_forecast_request.json"
+}

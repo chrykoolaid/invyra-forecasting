@@ -10,6 +10,12 @@ Typed FastAPI request contracts for item/location forecasts, batch forecasts, st
 
 The API layer must remain an integration wrapper. It must call the Python-first forecasting service and must not duplicate business logic inside endpoint handlers.
 
+## Phase 1C — API Fixtures + Integration Examples
+
+Sample JSON payloads, curl examples, PowerShell examples, module-specific integration fixtures, and tests that validate fixtures against the typed API contracts.
+
+The goal is to make future Inventory, ScanOps, Reorder Review, Purchasing, Dashboard, and Reports integration predictable and low-risk.
+
 ## Phase 2 — Inventory Integration Hardening
 
 Integrate with real Invyra Inventory item master and stock movement ledger. Add item details forecast section contracts, dashboard risk summaries, and audit-backed manager override workflow.

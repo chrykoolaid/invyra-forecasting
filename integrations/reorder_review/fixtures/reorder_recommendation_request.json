@@ -1,0 +1,5 @@
+{
+  "fixture_purpose": "Reorder Review suggested quantity and reason",
+  "route": "POST /recommendations/reorder",
+  "payload_file": "data/sample/api/reorder_recommendation_request.json"
+}

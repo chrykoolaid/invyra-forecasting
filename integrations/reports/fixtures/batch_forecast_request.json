@@ -1,0 +1,5 @@
+{
+  "fixture_purpose": "Reports forecast snapshot and risk export preparation",
+  "route": "POST /forecasts/batch",
+  "payload_file": "data/sample/api/batch_forecast_request.json"
+}

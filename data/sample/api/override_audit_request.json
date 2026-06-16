@@ -1,0 +1,13 @@
+{
+  "actor": "manager-1",
+  "environment": "TRAINING",
+  "item_id": "ITEM-001",
+  "location_id": "LOC-001",
+  "original_recommendation": {
+    "suggested_reorder_quantity": 12,
+    "urgency": "High",
+    "source": "forecasting-engine"
+  },
+  "override_action": "changed_quantity_to_18",
+  "reason": "Supplier case pack changed and manager verified shelf demand."
+}

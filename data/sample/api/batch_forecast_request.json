@@ -1,0 +1,58 @@
+{
+  "actor": "dashboard-risk-summary",
+  "write_snapshots": false,
+  "requests": [
+    {
+      "actor": "dashboard-risk-summary",
+      "environment": "TRAINING",
+      "forecast_horizon_days": 30,
+      "demand_lookback_days": 10,
+      "target_cover_days": 14,
+      "safety_stock_days": 3,
+      "anchor_date": "2026-06-16",
+      "write_snapshot": false,
+      "item": {"item_id": "ITEM-001", "sku": "SKU-COFFEE-250", "name": "Coffee Beans 250g", "category": "Grocery", "unit_of_measure": "unit", "minimum_order_quantity": 6},
+      "location": {"location_id": "LOC-001", "name": "Training Store", "location_type": "STORE"},
+      "stock_position": {"item_id": "ITEM-001", "location_id": "LOC-001", "on_hand": 18, "reserved": 0, "environment": "TRAINING"},
+      "movements": [
+        {"movement_id": "MOV-C-021", "item_id": "ITEM-001", "location_id": "LOC-001", "movement_date": "2026-06-07", "movement_type": "POS_SALE", "quantity": 3, "environment": "TRAINING"},
+        {"movement_id": "MOV-C-022", "item_id": "ITEM-001", "location_id": "LOC-001", "movement_date": "2026-06-08", "movement_type": "POS_SALE", "quantity": 3, "environment": "TRAINING"},
+        {"movement_id": "MOV-C-023", "item_id": "ITEM-001", "location_id": "LOC-001", "movement_date": "2026-06-09", "movement_type": "POS_SALE", "quantity": 3, "environment": "TRAINING"},
+        {"movement_id": "MOV-C-024", "item_id": "ITEM-001", "location_id": "LOC-001", "movement_date": "2026-06-10", "movement_type": "POS_SALE", "quantity": 3, "environment": "TRAINING"},
+        {"movement_id": "MOV-C-025", "item_id": "ITEM-001", "location_id": "LOC-001", "movement_date": "2026-06-11", "movement_type": "POS_SALE", "quantity": 3, "environment": "TRAINING"},
+        {"movement_id": "MOV-C-026", "item_id": "ITEM-001", "location_id": "LOC-001", "movement_date": "2026-06-12", "movement_type": "POS_SALE", "quantity": 3, "environment": "TRAINING"},
+        {"movement_id": "MOV-C-027", "item_id": "ITEM-001", "location_id": "LOC-001", "movement_date": "2026-06-13", "movement_type": "POS_SALE", "quantity": 4, "environment": "TRAINING"},
+        {"movement_id": "MOV-C-028", "item_id": "ITEM-001", "location_id": "LOC-001", "movement_date": "2026-06-14", "movement_type": "POS_SALE", "quantity": 3, "environment": "TRAINING"},
+        {"movement_id": "MOV-C-029", "item_id": "ITEM-001", "location_id": "LOC-001", "movement_date": "2026-06-15", "movement_type": "POS_SALE", "quantity": 3, "environment": "TRAINING"},
+        {"movement_id": "MOV-C-030", "item_id": "ITEM-001", "location_id": "LOC-001", "movement_date": "2026-06-16", "movement_type": "POS_SALE", "quantity": 3, "environment": "TRAINING"}
+      ],
+      "supplier_profile": {"supplier_id": "SUP-001", "item_id": "ITEM-001", "lead_time_days": 5, "lead_time_variability_days": 1, "minimum_order_quantity": 6}
+    },
+    {
+      "actor": "dashboard-risk-summary",
+      "environment": "TRAINING",
+      "forecast_horizon_days": 30,
+      "demand_lookback_days": 10,
+      "target_cover_days": 14,
+      "safety_stock_days": 3,
+      "anchor_date": "2026-06-16",
+      "write_snapshot": false,
+      "item": {"item_id": "ITEM-002", "sku": "SKU-MILK-1L", "name": "Milk 1L", "category": "Chilled", "unit_of_measure": "unit", "minimum_order_quantity": 12},
+      "location": {"location_id": "LOC-001", "name": "Training Store", "location_type": "STORE"},
+      "stock_position": {"item_id": "ITEM-002", "location_id": "LOC-001", "on_hand": 72, "reserved": 0, "environment": "TRAINING"},
+      "movements": [
+        {"movement_id": "MOV-M-021", "item_id": "ITEM-002", "location_id": "LOC-001", "movement_date": "2026-06-07", "movement_type": "POS_SALE", "quantity": 4, "environment": "TRAINING"},
+        {"movement_id": "MOV-M-022", "item_id": "ITEM-002", "location_id": "LOC-001", "movement_date": "2026-06-08", "movement_type": "POS_SALE", "quantity": 3, "environment": "TRAINING"},
+        {"movement_id": "MOV-M-023", "item_id": "ITEM-002", "location_id": "LOC-001", "movement_date": "2026-06-09", "movement_type": "POS_SALE", "quantity": 3, "environment": "TRAINING"},
+        {"movement_id": "MOV-M-024", "item_id": "ITEM-002", "location_id": "LOC-001", "movement_date": "2026-06-10", "movement_type": "POS_SALE", "quantity": 3, "environment": "TRAINING"},
+        {"movement_id": "MOV-M-025", "item_id": "ITEM-002", "location_id": "LOC-001", "movement_date": "2026-06-11", "movement_type": "POS_SALE", "quantity": 3, "environment": "TRAINING"},
+        {"movement_id": "MOV-M-026", "item_id": "ITEM-002", "location_id": "LOC-001", "movement_date": "2026-06-12", "movement_type": "POS_SALE", "quantity": 3, "environment": "TRAINING"},
+        {"movement_id": "MOV-M-027", "item_id": "ITEM-002", "location_id": "LOC-001", "movement_date": "2026-06-13", "movement_type": "POS_SALE", "quantity": 4, "environment": "TRAINING"},
+        {"movement_id": "MOV-M-028", "item_id": "ITEM-002", "location_id": "LOC-001", "movement_date": "2026-06-14", "movement_type": "POS_SALE", "quantity": 4, "environment": "TRAINING"},
+        {"movement_id": "MOV-M-029", "item_id": "ITEM-002", "location_id": "LOC-001", "movement_date": "2026-06-15", "movement_type": "POS_SALE", "quantity": 3, "environment": "TRAINING"},
+        {"movement_id": "MOV-M-030", "item_id": "ITEM-002", "location_id": "LOC-001", "movement_date": "2026-06-16", "movement_type": "POS_SALE", "quantity": 3, "environment": "TRAINING"}
+      ],
+      "supplier_profile": {"supplier_id": "SUP-002", "item_id": "ITEM-002", "lead_time_days": 2, "lead_time_variability_days": 0, "minimum_order_quantity": 12}
+    }
+  ]
+}

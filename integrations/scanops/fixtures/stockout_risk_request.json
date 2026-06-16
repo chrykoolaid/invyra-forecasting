@@ -1,0 +1,5 @@
+{
+  "fixture_purpose": "ScanOps Gap Scan / Floor Scan risk interpretation",
+  "route": "POST /risk/stockout",
+  "payload_file": "data/sample/api/stockout_risk_request.json"
+}

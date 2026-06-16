@@ -1,0 +1,5 @@
+{
+  "fixture_purpose": "POS sale movements as demand signal for forecasting",
+  "route": "POST /forecasts/item",
+  "payload_file": "data/sample/api/forecast_item_request.json"
+}

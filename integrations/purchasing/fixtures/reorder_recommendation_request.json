@@ -1,0 +1,5 @@
+{
+  "fixture_purpose": "Purchasing draft PO recommendation support only; no auto-purchasing",
+  "route": "POST /recommendations/reorder",
+  "payload_file": "data/sample/api/reorder_recommendation_request.json"
+}

@@ -1,0 +1,5 @@
+{
+  "fixture_purpose": "Wastage as sales-equivalent movement signal where operationally valid",
+  "route": "POST /forecasts/item",
+  "payload_file": "data/sample/api/forecast_item_request.json"
+}
