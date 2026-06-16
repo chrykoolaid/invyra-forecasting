@@ -1,0 +1,57 @@
+{
+  "actor": "item_details_panel",
+  "environment": "TRAINING",
+  "persist_snapshot": true,
+  "forecast_horizon_days": 30,
+  "demand_lookback_days": 30,
+  "target_cover_days": 14,
+  "safety_stock_days": 3,
+  "anchor_date": "2026-06-16",
+  "item": {
+    "id": "ITEM-001",
+    "sku": "SKU-COFFEE-250G",
+    "item_name": "Coffee Beans 250g",
+    "department": "Grocery",
+    "uom": "unit",
+    "moq": 6
+  },
+  "location": {
+    "branch_id": "BRANCH-001",
+    "branch_name": "Training Store",
+    "type": "BRANCH"
+  },
+  "stock_position": {
+    "item_id": "ITEM-001",
+    "branch_id": "BRANCH-001",
+    "stock_on_hand": 18,
+    "reserved_stock": 2,
+    "environment": "TRAINING"
+  },
+  "movements": [
+    {
+      "ledger_id": "MOV-001",
+      "item_id": "ITEM-001",
+      "branch_id": "BRANCH-001",
+      "created_at": "2026-06-14T09:30:00+08:00",
+      "source": "POS_AUTO_DEDUCTION",
+      "delta_quantity": -3,
+      "environment": "TRAINING"
+    },
+    {
+      "ledger_id": "MOV-002",
+      "item_id": "ITEM-001",
+      "branch_id": "BRANCH-001",
+      "created_at": "2026-06-15T11:00:00+08:00",
+      "source": "RECEIVING",
+      "quantity": 12,
+      "environment": "TRAINING"
+    }
+  ],
+  "supplier_profile": {
+    "primary_supplier_id": "SUP-001",
+    "item_id": "ITEM-001",
+    "supplier_lead_time_days": 5,
+    "lead_time_variability": 3,
+    "case_pack": 6
+  }
+}
