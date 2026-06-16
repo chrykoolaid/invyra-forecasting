@@ -4,6 +4,12 @@
 
 Python package baseline, data contracts, validation, moving average models, weighted moving average model, trend adjustment, days of cover, stockout/overstock risk, reorder recommendation, confidence scoring, explanation builder, snapshot writer, audit logger, sample CSV data, demo script, unit tests, and optional FastAPI service.
 
+## Phase 1B — API Payload Contracts + Endpoint Wiring
+
+Typed FastAPI request contracts for item/location forecasts, batch forecasts, stockout risk, reorder recommendations, and override audit events.
+
+The API layer must remain an integration wrapper. It must call the Python-first forecasting service and must not duplicate business logic inside endpoint handlers.
+
 ## Phase 2 — Inventory Integration Hardening
 
 Integrate with real Invyra Inventory item master and stock movement ledger. Add item details forecast section contracts, dashboard risk summaries, and audit-backed manager override workflow.
