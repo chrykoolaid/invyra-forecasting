@@ -1,0 +1,10 @@
+{
+  "status": "unavailable",
+  "snapshot_id": "missing-snapshot",
+  "message": "Forecast snapshot evidence was not found.",
+  "fallback": {
+    "item_details_usable": true,
+    "stock_history_usable": true,
+    "manual_review_available": true
+  }
+}
