@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import json
-from dataclasses import asdict
 from datetime import date
 from pathlib import Path
 
-from invyra_forecasting.audit import create_forecast_audit_event
+from invyra_forecasting.audit import JsonlAuditStore, create_forecast_audit_event
 from invyra_forecasting.config import ForecastingConfig
 from invyra_forecasting.confidence import score_confidence
+from invyra_forecasting.data.repositories import FileSnapshotRepository
 from invyra_forecasting.data.validation import validate_forecast_input
 from invyra_forecasting.explanation import build_explanation
 from invyra_forecasting.models import SimpleDemandForecaster
@@ -21,8 +20,17 @@ class ForecastingService:
 
     def __init__(self, config: ForecastingConfig | None = None) -> None:
         self.config = config or ForecastingConfig()
+        self.snapshot_repository = FileSnapshotRepository(self.config.snapshot_dir)
+        self.audit_store = JsonlAuditStore(self.config.audit_log_path)
 
-    def run_item_forecast(self, bundle: ForecastInputBundle, actor: str = "system", anchor_date: date | None = None, write_snapshot: bool = False) -> ForecastSnapshot:
+    def run_item_forecast(
+        self,
+        bundle: ForecastInputBundle,
+        actor: str = "system",
+        anchor_date: date | None = None,
+        write_snapshot: bool = False,
+        write_audit: bool | None = None,
+    ) -> ForecastSnapshot:
         validate_forecast_input(bundle)
         forecaster = SimpleDemandForecaster(self.config.demand_lookback_days, self.config.forecast_horizon_days)
         forecast = forecaster.forecast(bundle, anchor_date=anchor_date)
@@ -42,14 +50,16 @@ class ForecastingService:
         )
         if write_snapshot:
             self.write_snapshot(snapshot)
+        should_write_audit = write_snapshot if write_audit is None else write_audit
+        if should_write_audit:
+            self.audit_store.append(audit_event)
         return snapshot
 
     def run_batch_forecast(self, bundles: list[ForecastInputBundle], actor: str = "system", anchor_date: date | None = None, write_snapshots: bool = False) -> list[ForecastSnapshot]:
         return [self.run_item_forecast(bundle, actor=actor, anchor_date=anchor_date, write_snapshot=write_snapshots) for bundle in bundles]
 
     def write_snapshot(self, snapshot: ForecastSnapshot) -> Path:
-        snapshot_dir = Path(self.config.snapshot_dir)
-        snapshot_dir.mkdir(parents=True, exist_ok=True)
-        path = snapshot_dir / f"{snapshot.snapshot_id}.json"
-        path.write_text(json.dumps(asdict(snapshot), indent=2, default=str), encoding="utf-8")
-        return path
+        return self.snapshot_repository.save(snapshot)
+
+    def get_snapshot(self, snapshot_id: str) -> dict | None:
+        return self.snapshot_repository.get(snapshot_id)

@@ -72,16 +72,18 @@ The FastAPI layer is an integration wrapper. The core engine runs directly in Py
 uvicorn invyra_forecasting.api.app:app --reload
 ```
 
-Phase 1B/1C routes:
+Phase 1 routes:
 
 - `GET /health`
 - `POST /forecasts/item`
 - `POST /forecasts/batch`
 - `POST /risk/stockout`
 - `POST /recommendations/reorder`
+- `GET /snapshots/{snapshot_id}`
+- `GET /audit/events`
 - `POST /audit/override`
 
-The forecast, risk, and reorder endpoints call the real Python forecasting service through typed API payload contracts.
+The forecast, risk, and reorder endpoints call the real Python forecasting service through typed API payload contracts. Snapshot and audit endpoints provide Phase 1D readback and traceability.
 
 ## API Examples
 

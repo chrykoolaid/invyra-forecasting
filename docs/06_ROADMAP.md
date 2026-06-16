@@ -16,6 +16,12 @@ Sample JSON payloads, curl examples, PowerShell examples, module-specific integr
 
 The goal is to make future Inventory, ScanOps, Reorder Review, Purchasing, Dashboard, and Reports integration predictable and low-risk.
 
+## Phase 1D — Snapshot Retrieval + Audit Persistence
+
+File-backed forecast snapshot repository, snapshot readback endpoint, JSONL audit event store, audit event readback endpoint, and persisted manager override audit events.
+
+This phase strengthens traceability before deeper Inventory, Reorder Review, Purchasing, Dashboard, and Reports integration.
+
 ## Phase 2 — Inventory Integration Hardening
 
 Integrate with real Invyra Inventory item master and stock movement ledger. Add item details forecast section contracts, dashboard risk summaries, and audit-backed manager override workflow.

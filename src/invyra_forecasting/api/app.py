@@ -8,8 +8,9 @@ except ImportError as exc:  # pragma: no cover
 from invyra_forecasting import __version__
 from invyra_forecasting.api.contracts import BatchForecastRequest, ForecastRequest, OverrideAuditRequest
 from invyra_forecasting.api.serializers import to_primitive
-from invyra_forecasting.audit import create_override_audit_event
+from invyra_forecasting.audit import JsonlAuditStore, create_override_audit_event
 from invyra_forecasting.config import ForecastingConfig
+from invyra_forecasting.data.repositories import FileSnapshotRepository
 from invyra_forecasting.data.validation import ValidationError
 from invyra_forecasting.services import ForecastingService
 
@@ -66,7 +67,22 @@ def reorder_recommendation(payload: ForecastRequest) -> dict:
     return {"recommendation": to_primitive(snapshot.recommendation), "risk": to_primitive(snapshot.risk), "confidence": to_primitive(snapshot.confidence), "explanation": to_primitive(snapshot.explanation)}
 
 
+@app.get("/snapshots/{snapshot_id}")
+def get_snapshot(snapshot_id: str) -> dict:
+    snapshot = FileSnapshotRepository(ForecastingConfig.from_env().snapshot_dir).get(snapshot_id)
+    if snapshot is None:
+        raise HTTPException(status_code=404, detail=f"Snapshot not found: {snapshot_id}")
+    return snapshot
+
+
+@app.get("/audit/events")
+def audit_events(limit: int = 100, event_type: str | None = None, item_id: str | None = None, location_id: str | None = None, environment: str | None = None) -> dict:
+    events = JsonlAuditStore(ForecastingConfig.from_env().audit_log_path).list_events(limit=limit, event_type=event_type, item_id=item_id, location_id=location_id, environment=environment)
+    return {"count": len(events), "events": events}
+
+
 @app.post("/audit/override")
 def audit_override(payload: OverrideAuditRequest) -> dict:
     event = create_override_audit_event(payload.actor, payload.environment, payload.item_id, payload.location_id, payload.original_recommendation, payload.override_action, payload.reason)
+    JsonlAuditStore(ForecastingConfig.from_env().audit_log_path).append(event)
     return {"audit_event": to_primitive(event)}
