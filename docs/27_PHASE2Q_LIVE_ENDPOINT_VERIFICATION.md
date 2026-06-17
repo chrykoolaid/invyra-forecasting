@@ -1,6 +1,6 @@
 # Phase 2Q — Live Endpoint Verification
 
-Status: IMPLEMENTED / LIVE URL PENDING
+Status: COMPLETE / LIVE-PASSING
 
 ## Objective
 
@@ -12,10 +12,10 @@ Verify a deployed HTTPS Forecasting API endpoint before connecting hosted Base44
 scripts/verify_phase2q_live_api.py
 ```
 
-## Required Environment
+## Live API URL Verified
 
 ```text
-INVYRA_FORECASTING_API_BASE_URL=https://deployed-forecasting-api-host
+https://invyra-forecasting-api.onrender.com
 ```
 
 ## Verification Scope
@@ -34,42 +34,46 @@ purchase order approval remains false
 snapshot evidence endpoint works when snapshot_id exists
 ```
 
-## Run
+## Runtime Evidence Received
+
+The live verifier was run with:
 
 ```text
-Set INVYRA_FORECASTING_API_BASE_URL to the deployed HTTPS API URL.
-Run python scripts/verify_phase2q_live_api.py.
+INVYRA_FORECASTING_API_BASE_URL=https://invyra-forecasting-api.onrender.com
 ```
 
-Expected result:
+Observed result:
 
 ```text
+Phase 2Q: health endpoint passed
+Phase 2Q: forecast endpoint passed with status=available
+Phase 2Q: snapshot evidence endpoint passed for snapshot_id=db2305f1-79d0-4a9c-9da7-0f6358a7b364
 Phase 2Q live API verification passed.
 ```
 
-## Local Smoke Mode
+## Completion Result
 
-Local HTTP testing is allowed only when:
-
-```text
-INVYRA_PHASE2Q_ALLOW_HTTP_LOCAL=true
-```
-
-This is not valid for hosted completion.
-
-## Completion Gate
-
-Phase 2Q can be marked live-passing only after:
+Phase 2Q is complete because:
 
 ```text
 API is deployed to HTTPS
-live verifier passes against the HTTPS URL
-hosted Base44 can use the same HTTPS URL
-hosted Forecast intelligence remains advisory only
-no stock adjustment action appears
-no purchase order action appears
+health endpoint returned status ok
+health endpoint returned advisory mode
+forecast endpoint returned available
+snapshot evidence endpoint worked
+advisory-only guardrail remained true
+ledger source-of-truth guardrail remained true
+stock mutation remained false
+purchase order creation remained false
+purchase order approval remained false
 ```
 
-## Current Result
+## Hosted Base44 Follow-Up
 
-Verification tooling is complete. Live endpoint verification is pending until a deployed HTTPS API URL exists.
+Configure hosted Base44 with:
+
+```text
+VITE_INVYRA_FORECASTING_API_BASE_URL=https://invyra-forecasting-api.onrender.com
+```
+
+Then verify hosted Item Details forecast intelligence.
