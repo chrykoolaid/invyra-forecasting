@@ -2,6 +2,7 @@ from __future__ import annotations
 
 try:
     from fastapi import FastAPI, HTTPException
+    from fastapi.middleware.cors import CORSMiddleware
 except ImportError as exc:  # pragma: no cover
     raise RuntimeError("FastAPI is optional. Install API dependencies with: pip install -e '.[api]'") from exc
 
@@ -10,6 +11,7 @@ from invyra_forecasting.accuracy import AccuracyService, AccuracyValidationError
 from invyra_forecasting.api.accuracy_contracts import AccuracyEvaluationRequest
 from invyra_forecasting.api.contracts import BatchForecastRequest, ForecastRequest, OverrideAuditRequest
 from invyra_forecasting.api.inventory_contracts import ItemDetailsForecastPanelRequest
+from invyra_forecasting.api.runtime import ALLOWED_HEADERS, ALLOWED_METHODS, allowed_origins_from_env
 from invyra_forecasting.api.serializers import to_primitive
 from invyra_forecasting.audit import JsonlAuditStore, create_override_audit_event
 from invyra_forecasting.config import ForecastingConfig
@@ -19,6 +21,14 @@ from invyra_forecasting.integrations.inventory import ItemDetailsForecastBoundar
 from invyra_forecasting.services import ForecastingService
 
 app = FastAPI(title="Invyra Forecasting Engine", version=__version__, description="Optional internal API wrapper for the Python-first forecasting engine.")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allowed_origins_from_env(),
+    allow_credentials=False,
+    allow_methods=ALLOWED_METHODS,
+    allow_headers=ALLOWED_HEADERS,
+)
 
 
 def _config_from_request(request: ForecastRequest) -> ForecastingConfig:
