@@ -15,6 +15,7 @@ Dockerfile
 .dockerignore
 .env.production.example
 scripts/validate_phase2p_deployment_readiness.py
+scripts/verify_phase2q_live_api.py
 ```
 
 ## Runtime Entrypoint
@@ -95,6 +96,26 @@ Phase 2P deployment readiness validation passed.
 
 This validation is now included in CI.
 
+## Live Endpoint Verification
+
+After deployment, set:
+
+```text
+INVYRA_FORECASTING_API_BASE_URL=https://deployed-forecasting-api-host
+```
+
+Then run:
+
+```text
+python scripts/verify_phase2q_live_api.py
+```
+
+Expected:
+
+```text
+Phase 2Q live API verification passed.
+```
+
 ## API Routes Required By Hosted Base44
 
 ```text
@@ -107,7 +128,7 @@ The root route may continue returning 404. The API does not need a homepage rout
 
 ## Hosted Completion Gate
 
-Phase 2P can be marked deployment-passing only when:
+Phase 2P/2Q can be marked deployment-passing only when:
 
 ```text
 API is deployed to HTTPS
@@ -116,6 +137,7 @@ POST /inventory/item-details/forecast returns 200 over HTTPS
 CORS allows the hosted Base44 origin
 snapshot endpoint works when snapshot_id exists
 hosted Base44 can be configured with the HTTPS API URL
+live verifier passes
 ```
 
 ## Governance Lock
