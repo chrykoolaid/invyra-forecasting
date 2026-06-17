@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: invyra-forecasting-api
+    runtime: docker
+    plan: starter
+    healthCheckPath: /health
+    envVars:
+      - key: INVYRA_FORECASTING_ALLOWED_ORIGINS
+        value: https://app.base44.com
+      - key: INVYRA_FORECASTING_SNAPSHOT_DIR
+        value: /var/data/snapshots
+      - key: INVYRA_FORECASTING_AUDIT_LOG_PATH
+        value: /var/data/audit/events.jsonl
+      - key: INVYRA_FORECASTING_ACCURACY_LOG_PATH
+        value: /var/data/accuracy/accuracy.jsonl
+      - key: INVYRA_FORECASTING_REPORT_EXPORT_DIR
+        value: /var/data/reports
+    disk:
+      name: invyra-forecasting-data
+      mountPath: /var/data
+      sizeGB: 1
