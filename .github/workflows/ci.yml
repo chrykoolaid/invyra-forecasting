@@ -20,3 +20,5 @@ jobs:
           INVYRA_FORECASTING_ALLOWED_ORIGINS: https://app.base44.com
           INVYRA_FORECASTING_PORT: "8000"
         run: python scripts/validate_phase2p_deployment_readiness.py
+      - name: Validate Phase 2Q Render blueprint
+        run: python scripts/validate_phase2q_render_blueprint.py
