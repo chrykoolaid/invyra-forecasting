@@ -3,8 +3,6 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
-from invyra_forecasting.intelligence import ForecastIntelligenceResult
-
 
 @dataclass(frozen=True)
 class ForecastIntelligenceSummary:
@@ -25,7 +23,7 @@ class ForecastIntelligenceSummary:
         return asdict(self)
 
 
-def summarize_forecast_intelligence(intelligence: ForecastIntelligenceResult) -> ForecastIntelligenceSummary:
+def summarize_forecast_intelligence(intelligence: Any) -> ForecastIntelligenceSummary:
     """Create a stable summary from a registry-backed intelligence result."""
 
     return ForecastIntelligenceSummary(
