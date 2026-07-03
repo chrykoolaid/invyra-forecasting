@@ -44,6 +44,20 @@ Forecasting must assist decisions without cluttering staff workflows or replacin
 9. No fake AI claims in v1.
 10. Start with simple explainable forecasting before advanced ML.
 
+## Current Intelligence Status
+
+The forecasting engine now supports a registry-backed intelligence path while preserving the original advisory forecasting guardrails.
+
+Current locked guarantees:
+
+- Forecasting remains advisory-only.
+- Inventory ledger remains the source of truth.
+- The engine does not mutate stock.
+- The engine does not create stock movements.
+- The engine does not create or approve purchase orders.
+- Intelligence metadata is explainability context, not an operational write path.
+- Base service forecast math remains separate from optional registry-backed intelligence helpers.
+
 ## Phase 2U Forecast Signal Registry
 
 The Forecast Signal Registry is the controlled intelligence boundary between Invyra modules and the forecasting engine.
@@ -170,162 +184,56 @@ The Phase 2W baseline model is deterministic and explainable. It is not an advan
 
 The model output remains advisory-only and does not mutate inventory, create stock movements, create purchase orders, approve purchase orders, or replace the inventory ledger.
 
-## Phase 2X Advisory Forecast Orchestration
+## Phase 2X Intelligence Summary Adapter
 
-The Advisory Forecast Orchestration layer provides the first end-to-end forecasting service boundary.
-
-It coordinates:
-
-```text
-Forecast Signal Registry
-        |
-        v
-ForecastIntelligencePipeline
-        |
-        v
-ForecastModelService
-        |
-        v
-AdvisoryForecastResponse
-```
+The intelligence summary adapter creates compact, snapshot-friendly context from registry-backed intelligence results.
 
 This phase adds:
 
 ```text
-src/invyra_forecasting/orchestration/
-  contracts.py
-  service.py
+src/invyra_forecasting/intelligence_summary.py
 ```
 
-The orchestrator accepts an `AdvisoryForecastRequest` for one item/location/environment and returns an `AdvisoryForecastResponse` with:
+The summary is designed for metadata and explainability. It does not change forecast math or recommendation decisions.
 
-- forecast quantity
-- projected days of cover
-- stockout risk
-- confidence
-- explanation
-- evidence references
-- intelligence summary
-- model metadata
-- advisory-only guardrails
+## Phase 2Y Snapshot Intelligence Context
 
-The orchestration layer still does not mutate inventory, create stock movements, create purchase orders, approve purchase orders, or replace the inventory ledger.
+Forecast snapshots support optional `intelligence_context` metadata.
 
-## Phase 2Y Advisory API Wiring
+The field is backward-compatible and defaults to `None` for existing callers.
 
-The optional FastAPI wrapper exposes the advisory orchestration layer through:
+## Phase 2Z Service Intelligence Context
 
-```text
-POST /advisory/forecast
-```
+`ForecastingService.run_item_forecast()` supports optional `intelligence_context` passthrough into forecast snapshots.
 
-The endpoint accepts an item/location/environment request plus normalized forecast signals. It builds an in-memory request-scoped registry, runs the advisory orchestration service, and returns the explainable forecast response.
+Default service behavior remains unchanged when no context is provided.
 
-This endpoint is stateless and does not persist signals. It does not mutate inventory, create stock movements, create purchase orders, approve purchase orders, or replace the inventory ledger.
+## Phase 3A Registry Intelligence Forecast Helper
 
-## Phase 2Z Explainability Contracts
+Phase 3A adds a helper path that builds registry-backed intelligence context and passes it into the existing forecasting service.
 
-The Explainability package defines enterprise reporting contracts for future forecast explanation, confidence, evidence, diagnostics, and manager-readable narratives.
+The helper attaches intelligence context to snapshots while preserving base forecasting behavior.
 
-This first Phase 2Z pass adds contracts only:
+## Phase 3B Intelligence Explanation Context
 
-```text
-src/invyra_forecasting/explainability/
-  objects.py
-```
+Phase 3B adds explanation helpers that convert intelligence context into readable drivers and warnings.
 
-Initial explainability objects include:
+These helpers enrich explanations only through metadata. They do not change forecast math or recommendations.
 
-- `EvidenceSummary`
-- `ConfidenceBreakdown`
-- `DiagnosticFinding`
-- `DiagnosticReport`
-- `RecommendationNarrative`
-- `ForecastExplanation`
+## Phase 3C Helper Explanation Enrichment
 
-These contracts preserve advisory-only governance and provide the stable object model that later Phase 2Z passes will use for explanation builders, diagnostics, confidence reports, and enterprise recommendation summaries.
+Phase 3C wires the Phase 3B explanation enrichment into the registry-intelligence helper path.
 
-## Phase 2Z Explanation Builder
+The base forecasting service remains unchanged.
 
-The `ForecastExplanationBuilder` converts an `AdvisoryForecastResponse` into a `ForecastExplanation` object.
+## Phase 3D Helper Contract Hardening
 
-It produces:
+Phase 3D adds a safe helper contract test to keep the registry-intelligence helper importable and stable.
 
-- explanation lines
-- evidence summary
-- confidence breakdown
-- manager-readable narrative
-- audit reference carry-forward
-- advisory-only guardrail fields
+This is a test-only hardening pass with no production code changes.
 
-The builder is deterministic and read-only. It does not mutate inventory, create stock movements, create purchase orders, approve purchase orders, or replace the inventory ledger.
+## Phase 3E Governance Status Notes
 
-## Phase 2Z Diagnostics Engine
+Phase 3E documents the completed registry-backed intelligence path and its governance boundaries.
 
-The `ForecastDiagnosticsEngine` produces read-only diagnostics from an `AdvisoryForecastResponse`.
-
-It detects:
-
-- no signals
-- missing or partial evidence references
-- unknown coverage
-- low coverage
-- low confidence
-- high or unknown stockout risk
-- advisory/source-of-truth guardrail drift
-
-Diagnostics affect explainability and review priority only. They do not mutate inventory, create stock movements, create purchase orders, approve purchase orders, or replace the inventory ledger.
-
-## Quick Start
-
-```bash
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-pip install -e .
-python examples/run_local_demo.py
-pytest
-```
-
-On macOS/Linux:
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-pip install -e .
-python examples/run_local_demo.py
-pytest
-```
-
-## Optional API
-
-The FastAPI layer is an integration wrapper. The core engine runs directly in Python without the API.
-
-```bash
-uvicorn invyra_forecasting.api.app:app --reload
-```
-
-Phase routes include:
-
-- `GET /health`
-- `POST /forecasts/item`
-- `POST /forecasts/batch`
-- `POST /risk/stockout`
-- `POST /recommendations/reorder`
-- `POST /advisory/forecast`
-- `GET /snapshots/{snapshot_id}`
-- `GET /audit/events`
-- `POST /audit/override`
-- `POST /accuracy/evaluate`
-- `GET /accuracy/item/{item_id}`
-
-The forecast, risk, reorder, and advisory endpoints call the real Python forecasting service through typed API payload contracts. Snapshot, audit, accuracy, and confidence recalibration foundations provide traceability and proof of forecast quality.
-
-## API Examples
-
-Ready-to-use request fixtures live under `data/sample/api/`.
-
-Module-specific fixtures live under `integrations/*/fixtures/` for Inventory, ScanOps, Reorder Review, Purchasing, Dashboard, Reports, Suppliers, Markdowns, Wastage, POS, and CRM.
-
-Curl and PowerShell examples live under `examples/api/`.
+This is a documentation-only phase. It does not change runtime behavior, forecast calculations, recommendations, inventory, stock movements, or purchase-order behavior.
