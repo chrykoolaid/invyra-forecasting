@@ -70,6 +70,70 @@ src/invyra_forecasting/signals/
 
 Initial supported signal categories include sales, stock movements, receiving, purchasing, supplier lead time, adjustments, wastage, markdowns, transfers, ScanOps gap/floor/shelf events, and location stock snapshots.
 
+## Phase 2V Forecast Intelligence Pipeline
+
+The Forecast Intelligence Pipeline transforms registered signals into model-ready intelligence objects before any forecasting model receives them.
+
+Pipeline stages:
+
+```text
+Forecast Signal Registry
+        |
+        v
+Signal Ingestion
+        |
+        v
+Signal Normalization Flow
+        |
+        v
+Signal Quality Assessment
+        |
+        v
+Signal Weighting
+        |
+        v
+Feature Extraction
+        |
+        v
+Evidence Linking
+        |
+        v
+ForecastIntelligence object
+        |
+        v
+Forecast Models
+```
+
+Core package:
+
+```text
+src/invyra_forecasting/intelligence/
+  ingestion/collector.py
+  normalization/pipeline.py
+  validation/quality.py
+  weighting/scorer.py
+  features/extractor.py
+  evidence/linker.py
+  objects.py
+  pipeline.py
+```
+
+The pipeline produces a `ForecastIntelligence` object containing:
+
+- item and location identity
+- environment boundary
+- analysis window
+- normalized signals
+- quality assessments
+- weighted signals
+- extracted feature set
+- evidence links
+- confidence
+- processing metadata
+- audit references
+
+Phase 2V remains advisory-only. It does not mutate inventory, create stock movements, create purchase orders, approve purchase orders, or replace the inventory ledger.
+
 ## Quick Start
 
 ```bash
