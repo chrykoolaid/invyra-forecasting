@@ -260,6 +260,22 @@ It produces:
 
 The builder is deterministic and read-only. It does not mutate inventory, create stock movements, create purchase orders, approve purchase orders, or replace the inventory ledger.
 
+## Phase 2Z Diagnostics Engine
+
+The `ForecastDiagnosticsEngine` produces read-only diagnostics from an `AdvisoryForecastResponse`.
+
+It detects:
+
+- no signals
+- missing or partial evidence references
+- unknown coverage
+- low coverage
+- low confidence
+- high or unknown stockout risk
+- advisory/source-of-truth guardrail drift
+
+Diagnostics affect explainability and review priority only. They do not mutate inventory, create stock movements, create purchase orders, approve purchase orders, or replace the inventory ledger.
+
 ## Quick Start
 
 ```bash
