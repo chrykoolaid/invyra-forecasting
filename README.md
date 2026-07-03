@@ -44,6 +44,32 @@ Forecasting must assist decisions without cluttering staff workflows or replacin
 9. No fake AI claims in v1.
 10. Start with simple explainable forecasting before advanced ML.
 
+## Phase 2U Forecast Signal Registry
+
+The Forecast Signal Registry is the controlled intelligence boundary between Invyra modules and the forecasting engine.
+
+Modules publish normalized forecast signals. The engine consumes those signals as advisory intelligence inputs.
+
+The registry does not:
+
+- mutate inventory
+- create stock movements
+- create purchase orders
+- approve purchase orders
+- replace the inventory ledger as source of truth
+
+Initial package:
+
+```text
+src/invyra_forecasting/signals/
+  schema.py
+  validators.py
+  registry.py
+  normalizers.py
+```
+
+Initial supported signal categories include sales, stock movements, receiving, purchasing, supplier lead time, adjustments, wastage, markdowns, transfers, ScanOps gap/floor/shelf events, and location stock snapshots.
+
 ## Quick Start
 
 ```bash
