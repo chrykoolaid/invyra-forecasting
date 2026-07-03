@@ -284,3 +284,17 @@ Phase 3I adds compatibility tests proving both package-level and direct import p
 Phase 3J documents the stable service import paths and updates the README status after Phase 3F through Phase 3I.
 
 This is a documentation-only phase. It does not change runtime behavior, forecast calculations, recommendations, inventory, stock movements, or purchase-order behavior.
+
+## Phase 3K README Phase Marker Contract
+
+Phase 3K adds a test-only contract confirming README phase markers and stable service import path documentation remain present.
+
+## Phase 3L Service Helper Boundary Contract
+
+Phase 3L adds a test-only boundary contract confirming the registry-intelligence helper remains exported while its implementation stays isolated from the base forecasting service core module.
+
+## Phase 3M Boundary Status Notes
+
+Phase 3M documents Phase 3K and Phase 3L completion and keeps the public README aligned with helper-boundary governance.
+
+This is a documentation-only phase. It does not change runtime behavior, forecast calculations, recommendations, inventory, stock movements, or purchase-order behavior.
