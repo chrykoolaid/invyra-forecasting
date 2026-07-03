@@ -1,3 +1,4 @@
+from invyra_forecasting.explainability.explanation_builder import ForecastExplanationBuilder
 from invyra_forecasting.explainability.objects import (
     ConfidenceBreakdown,
     DiagnosticFinding,
@@ -15,5 +16,6 @@ __all__ = [
     "DiagnosticSeverity",
     "EvidenceSummary",
     "ForecastExplanation",
+    "ForecastExplanationBuilder",
     "RecommendationNarrative",
 ]
