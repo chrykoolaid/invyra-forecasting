@@ -170,6 +170,47 @@ The Phase 2W baseline model is deterministic and explainable. It is not an advan
 
 The model output remains advisory-only and does not mutate inventory, create stock movements, create purchase orders, approve purchase orders, or replace the inventory ledger.
 
+## Phase 2X Advisory Forecast Orchestration
+
+The Advisory Forecast Orchestration layer provides the first end-to-end forecasting service boundary.
+
+It coordinates:
+
+```text
+Forecast Signal Registry
+        |
+        v
+ForecastIntelligencePipeline
+        |
+        v
+ForecastModelService
+        |
+        v
+AdvisoryForecastResponse
+```
+
+This phase adds:
+
+```text
+src/invyra_forecasting/orchestration/
+  contracts.py
+  service.py
+```
+
+The orchestrator accepts an `AdvisoryForecastRequest` for one item/location/environment and returns an `AdvisoryForecastResponse` with:
+
+- forecast quantity
+- projected days of cover
+- stockout risk
+- confidence
+- explanation
+- evidence references
+- intelligence summary
+- model metadata
+- advisory-only guardrails
+
+The orchestration layer still does not mutate inventory, create stock movements, create purchase orders, approve purchase orders, or replace the inventory ledger.
+
 ## Quick Start
 
 ```bash
