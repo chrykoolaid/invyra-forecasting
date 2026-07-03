@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import date
 from pathlib import Path
+from typing import Any
 
 from invyra_forecasting.accuracy import JsonlAccuracyStore
 from invyra_forecasting.audit import JsonlAuditStore, create_forecast_audit_event
@@ -32,12 +33,19 @@ class ForecastingService:
         anchor_date: date | None = None,
         write_snapshot: bool = False,
         write_audit: bool | None = None,
+        intelligence_context: dict[str, Any] | None = None,
     ) -> ForecastSnapshot:
         validate_forecast_input(bundle)
         forecaster = SimpleDemandForecaster(self.config.demand_lookback_days, self.config.forecast_horizon_days)
         forecast = forecaster.forecast(bundle, anchor_date=anchor_date)
         risk = score_inventory_risk(bundle, forecast, self.config.target_cover_days, anchor_date=anchor_date)
-        recommendation = build_reorder_recommendation(bundle, forecast, risk, self.config.safety_stock_days, self.config.target_cover_days)
+        recommendation = build_reorder_recommendation(
+            bundle,
+            forecast,
+            risk,
+            self.config.safety_stock_days,
+            self.config.target_cover_days,
+        )
         base_confidence = score_confidence(bundle, self.config.demand_lookback_days, anchor_date=anchor_date)
         accuracy_history = self.accuracy_store.list_results(
             limit=self.config.confidence_accuracy_window,
@@ -45,17 +53,35 @@ class ForecastingService:
             location_id=bundle.location.location_id,
             environment=bundle.environment,
         )
-        confidence = recalibrate_confidence_with_accuracy(base_confidence, accuracy_history, self.config.confidence_accuracy_window)
+        confidence = recalibrate_confidence_with_accuracy(
+            base_confidence,
+            accuracy_history,
+            self.config.confidence_accuracy_window,
+        )
         explanation = build_explanation(bundle, forecast, risk, recommendation, confidence)
-        audit_event = create_forecast_audit_event(actor, bundle.environment, bundle.item.item_id, bundle.location.location_id, {"method": forecast.method, "advisory_only": True})
+        audit_event = create_forecast_audit_event(
+            actor,
+            bundle.environment,
+            bundle.item.item_id,
+            bundle.location.location_id,
+            {"method": forecast.method, "advisory_only": True},
+        )
         snapshot = ForecastSnapshot.create(
-            input_summary={"item_id": bundle.item.item_id, "location_id": bundle.location.location_id, "stock_available": bundle.stock_position.available, "movement_count": len(bundle.movements), "supplier_lead_time_days": bundle.supplier_profile.lead_time_days, "environment": bundle.environment.value},
+            input_summary={
+                "item_id": bundle.item.item_id,
+                "location_id": bundle.location.location_id,
+                "stock_available": bundle.stock_position.available,
+                "movement_count": len(bundle.movements),
+                "supplier_lead_time_days": bundle.supplier_profile.lead_time_days,
+                "environment": bundle.environment.value,
+            },
             forecast=forecast,
             risk=risk,
             recommendation=recommendation,
             confidence=confidence,
             explanation=explanation,
             audit_event=audit_event,
+            intelligence_context=intelligence_context,
         )
         if write_snapshot:
             self.write_snapshot(snapshot)
@@ -64,8 +90,22 @@ class ForecastingService:
             self.audit_store.append(audit_event)
         return snapshot
 
-    def run_batch_forecast(self, bundles: list[ForecastInputBundle], actor: str = "system", anchor_date: date | None = None, write_snapshots: bool = False) -> list[ForecastSnapshot]:
-        return [self.run_item_forecast(bundle, actor=actor, anchor_date=anchor_date, write_snapshot=write_snapshots) for bundle in bundles]
+    def run_batch_forecast(
+        self,
+        bundles: list[ForecastInputBundle],
+        actor: str = "system",
+        anchor_date: date | None = None,
+        write_snapshots: bool = False,
+    ) -> list[ForecastSnapshot]:
+        return [
+            self.run_item_forecast(
+                bundle,
+                actor=actor,
+                anchor_date=anchor_date,
+                write_snapshot=write_snapshots,
+            )
+            for bundle in bundles
+        ]
 
     def write_snapshot(self, snapshot: ForecastSnapshot) -> Path:
         return self.snapshot_repository.save(snapshot)
