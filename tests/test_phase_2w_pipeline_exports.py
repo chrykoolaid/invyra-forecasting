@@ -1,0 +1,9 @@
+from invyra_forecasting.pipeline import ForecastIntelligencePipeline, ForecastSignalIngestionPipeline
+from invyra_forecasting.pipeline.ingestion import ForecastIntelligencePipeline as LegacyPipelineName
+from invyra_forecasting.pipeline.ingestion import ForecastSignalIngestionPipeline as ExplicitPipelineName
+
+
+def test_signal_ingestion_pipeline_has_explicit_name_and_legacy_alias():
+    assert ForecastSignalIngestionPipeline is ForecastIntelligencePipeline
+    assert ExplicitPipelineName is LegacyPipelineName
+    assert ForecastSignalIngestionPipeline.__name__ == "ForecastSignalIngestionPipeline"
