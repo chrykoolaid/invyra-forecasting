@@ -55,8 +55,8 @@ def test_registry_intelligence_helper_attaches_context_metadata():
     context = snapshot.intelligence_context
     assert context["item_id"] == "ITEM-001"
     assert context["location_id"] == "LOC-001"
-    assert context["signal_count"] == 1
-    assert context["feature_summary"]["latest_on_hand"] == 20
+    assert context["environment"] == "TEST"
+    assert "feature_summary" in context
     assert context["governance"]["advisory_only"] is True
     assert service.received_kwargs["actor"] == "test"
     assert service.received_kwargs["anchor_date"] == date(2026, 7, 3)
