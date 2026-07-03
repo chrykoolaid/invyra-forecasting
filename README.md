@@ -134,6 +134,42 @@ The pipeline produces a `ForecastIntelligence` object containing:
 
 Phase 2V remains advisory-only. It does not mutate inventory, create stock movements, create purchase orders, approve purchase orders, or replace the inventory ledger.
 
+## Phase 2W Model Handoff Layer
+
+The Model Handoff Layer converts `ForecastIntelligence` into stable model input/output contracts.
+
+This phase adds:
+
+```text
+src/invyra_forecasting/models/
+  contracts.py
+  handoff.py
+  baseline.py
+  service.py
+```
+
+Flow:
+
+```text
+ForecastIntelligence
+        |
+        v
+ForecastModelHandoffAdapter
+        |
+        v
+ForecastModelInput
+        |
+        v
+BaselineExplainableDemandModel
+        |
+        v
+ForecastModelOutput
+```
+
+The Phase 2W baseline model is deterministic and explainable. It is not an advanced ML model and does not make fake AI claims. Future models can replace it while keeping the same handoff contract.
+
+The model output remains advisory-only and does not mutate inventory, create stock movements, create purchase orders, approve purchase orders, or replace the inventory ledger.
+
 ## Quick Start
 
 ```bash
