@@ -245,6 +245,21 @@ Initial explainability objects include:
 
 These contracts preserve advisory-only governance and provide the stable object model that later Phase 2Z passes will use for explanation builders, diagnostics, confidence reports, and enterprise recommendation summaries.
 
+## Phase 2Z Explanation Builder
+
+The `ForecastExplanationBuilder` converts an `AdvisoryForecastResponse` into a `ForecastExplanation` object.
+
+It produces:
+
+- explanation lines
+- evidence summary
+- confidence breakdown
+- manager-readable narrative
+- audit reference carry-forward
+- advisory-only guardrail fields
+
+The builder is deterministic and read-only. It does not mutate inventory, create stock movements, create purchase orders, approve purchase orders, or replace the inventory ledger.
+
 ## Quick Start
 
 ```bash
