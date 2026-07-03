@@ -58,6 +58,29 @@ Current locked guarantees:
 - Intelligence metadata is explainability context, not an operational write path.
 - Base service forecast math remains separate from optional registry-backed intelligence helpers.
 
+## Stable Service Import Paths
+
+Base forecasting service:
+
+```python
+from invyra_forecasting.services import ForecastingService
+```
+
+Registry-backed intelligence helper:
+
+```python
+from invyra_forecasting.services import run_item_forecast_with_registry_intelligence
+```
+
+Direct compatibility paths remain supported:
+
+```python
+from invyra_forecasting.services.forecasting_service import ForecastingService
+from invyra_forecasting.services.intelligence_forecasting import run_item_forecast_with_registry_intelligence
+```
+
+The package-level export is an integration convenience only. It does not couple the base `ForecastingService` implementation to registry internals.
+
 ## Phase 2U Forecast Signal Registry
 
 The Forecast Signal Registry is the controlled intelligence boundary between Invyra modules and the forecasting engine.
@@ -235,5 +258,29 @@ This is a test-only hardening pass with no production code changes.
 ## Phase 3E Governance Status Notes
 
 Phase 3E documents the completed registry-backed intelligence path and its governance boundaries.
+
+This is a documentation-only phase. It does not change runtime behavior, forecast calculations, recommendations, inventory, stock movements, or purchase-order behavior.
+
+## Phase 3F Helper Separation Contract
+
+Phase 3F adds a test-only separation contract confirming the base forecasting service does not import or directly depend on the registry-intelligence helper.
+
+## Phase 3G Helper Advisory Guardrail Contract
+
+Phase 3G adds a test-only advisory guardrail contract confirming the helper does not introduce stock mutation, stock movement creation, purchase-order creation, or purchase-order approval paths.
+
+## Phase 3H Service Helper Export
+
+Phase 3H exports the registry-intelligence helper from `invyra_forecasting.services` while preserving the direct helper import path.
+
+This is an import convenience for future Base44/Desktop integration code. It does not change forecasting behavior.
+
+## Phase 3I Service Import Compatibility
+
+Phase 3I adds compatibility tests proving both package-level and direct import paths remain valid for the base forecasting service and registry-intelligence helper.
+
+## Phase 3J Service Import Status Notes
+
+Phase 3J documents the stable service import paths and updates the README status after Phase 3F through Phase 3I.
 
 This is a documentation-only phase. It does not change runtime behavior, forecast calculations, recommendations, inventory, stock movements, or purchase-order behavior.
