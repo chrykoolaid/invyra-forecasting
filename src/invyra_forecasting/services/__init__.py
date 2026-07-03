@@ -1,3 +1,4 @@
 from invyra_forecasting.services.forecasting_service import ForecastingService
+from invyra_forecasting.services.intelligence_forecasting import run_item_forecast_with_registry_intelligence
 
-__all__ = ["ForecastingService"]
+__all__ = ["ForecastingService", "run_item_forecast_with_registry_intelligence"]
