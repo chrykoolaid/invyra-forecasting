@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import date
 
+from invyra_forecasting.explanation import enrich_explanation_with_intelligence_context
 from invyra_forecasting.intelligence import ForecastIntelligencePipeline, ForecastIntelligenceRequest
 from invyra_forecasting.intelligence_summary import summarize_forecast_intelligence
 from invyra_forecasting.schemas import ForecastInputBundle, ForecastSnapshot
@@ -28,11 +30,16 @@ def run_item_forecast_with_registry_intelligence(
         )
     )
     summary = summarize_forecast_intelligence(intelligence)
-    return service.run_item_forecast(
+    intelligence_context = summary.to_dict()
+    snapshot = service.run_item_forecast(
         bundle,
         actor=actor,
         anchor_date=anchor_date,
         write_snapshot=write_snapshot,
         write_audit=write_audit,
-        intelligence_context=summary.to_dict(),
+        intelligence_context=intelligence_context,
+    )
+    return replace(
+        snapshot,
+        explanation=enrich_explanation_with_intelligence_context(snapshot.explanation, intelligence_context),
     )
