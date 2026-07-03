@@ -1,0 +1,6 @@
+from invyra_forecasting.services.intelligence_forecasting import run_item_forecast_with_registry_intelligence
+
+
+def test_registry_intelligence_helper_is_importable():
+    assert callable(run_item_forecast_with_registry_intelligence)
+    assert run_item_forecast_with_registry_intelligence.__name__ == "run_item_forecast_with_registry_intelligence"
