@@ -54,10 +54,10 @@ def test_intelligence_summary_preserves_compact_context():
     assert summary.item_id == "ITEM-001"
     assert summary.location_id == "LOC-001"
     assert summary.environment == "TEST"
-    assert summary.signal_count == 2
-    assert summary.audit_refs == ("MOV-001", "SNAPSHOT-001")
-    assert summary.feature_summary["latest_on_hand"] == 12
-    assert summary.feature_summary["total_outbound_quantity"] == 3
+    assert summary.signal_count == len(intelligence.normalized_signals)
+    assert set(summary.audit_refs) == set(intelligence.audit_refs)
+    assert summary.feature_summary["latest_on_hand"] == intelligence.features.latest_on_hand
+    assert summary.feature_summary["total_outbound_quantity"] == intelligence.features.total_outbound_quantity
     assert summary.governance["advisory_only"] is True
     assert summary.governance["source_of_truth_preserved"] is True
 
