@@ -9,6 +9,7 @@ except ImportError as exc:  # pragma: no cover
 from invyra_forecasting import __version__
 from invyra_forecasting.accuracy import AccuracyService, AccuracyValidationError
 from invyra_forecasting.api.accuracy_contracts import AccuracyEvaluationRequest
+from invyra_forecasting.api.advisory_contracts import AdvisoryForecastApiRequest
 from invyra_forecasting.api.contracts import BatchForecastRequest, ForecastRequest, OverrideAuditRequest
 from invyra_forecasting.api.inventory_contracts import ItemDetailsForecastPanelRequest
 from invyra_forecasting.api.runtime import ALLOWED_HEADERS, ALLOWED_METHODS, allowed_origins_from_env
@@ -18,7 +19,9 @@ from invyra_forecasting.config import ForecastingConfig
 from invyra_forecasting.data.repositories import FileSnapshotRepository
 from invyra_forecasting.data.validation import ValidationError
 from invyra_forecasting.integrations.inventory import ItemDetailsForecastBoundary
+from invyra_forecasting.orchestration import AdvisoryForecastOrchestrator
 from invyra_forecasting.services import ForecastingService
+from invyra_forecasting.signals import ForecastSignalValidationError, InMemoryForecastSignalRegistry
 
 app = FastAPI(title="Invyra Forecasting Engine", version=__version__, description="Optional internal API wrapper for the Python-first forecasting engine.")
 
@@ -105,6 +108,18 @@ def stockout_risk(payload: ForecastRequest) -> dict:
 def reorder_recommendation(payload: ForecastRequest) -> dict:
     snapshot = _run_snapshot(payload)
     return {"recommendation": to_primitive(snapshot.recommendation), "risk": to_primitive(snapshot.risk), "confidence": to_primitive(snapshot.confidence), "explanation": to_primitive(snapshot.explanation)}
+
+
+@app.post("/advisory/forecast")
+def advisory_forecast(payload: AdvisoryForecastApiRequest) -> dict:
+    registry = InMemoryForecastSignalRegistry()
+    try:
+        for signal_payload in payload.signals:
+            registry.publish(signal_payload.to_signal())
+        response = AdvisoryForecastOrchestrator(registry).forecast(payload.to_orchestration_request())
+    except ForecastSignalValidationError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return to_primitive(response)
 
 
 @app.post("/inventory/item-details/forecast")
