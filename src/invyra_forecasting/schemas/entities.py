@@ -127,7 +127,15 @@ class AuditEvent:
     details: dict[str, Any] = field(default_factory=dict)
 
     @classmethod
-    def create(cls, event_type: str, actor: str, environment: Environment, item_id: str | None = None, location_id: str | None = None, details: dict[str, Any] | None = None) -> "AuditEvent":
+    def create(
+        cls,
+        event_type: str,
+        actor: str,
+        environment: Environment,
+        item_id: str | None = None,
+        location_id: str | None = None,
+        details: dict[str, Any] | None = None,
+    ) -> "AuditEvent":
         return cls(
             event_id=str(uuid4()),
             event_type=event_type,
@@ -151,9 +159,20 @@ class ForecastSnapshot:
     confidence: ConfidenceResult
     explanation: ExplanationResult
     audit_event: AuditEvent
+    intelligence_context: dict[str, Any] | None = None
 
     @classmethod
-    def create(cls, input_summary: dict[str, Any], forecast: ForecastResult, risk: RiskResult, recommendation: RecommendationResult, confidence: ConfidenceResult, explanation: ExplanationResult, audit_event: AuditEvent) -> "ForecastSnapshot":
+    def create(
+        cls,
+        input_summary: dict[str, Any],
+        forecast: ForecastResult,
+        risk: RiskResult,
+        recommendation: RecommendationResult,
+        confidence: ConfidenceResult,
+        explanation: ExplanationResult,
+        audit_event: AuditEvent,
+        intelligence_context: dict[str, Any] | None = None,
+    ) -> "ForecastSnapshot":
         return cls(
             snapshot_id=str(uuid4()),
             created_at_utc=datetime.now(UTC).isoformat(timespec="seconds").replace("+00:00", "Z"),
@@ -164,6 +183,7 @@ class ForecastSnapshot:
             confidence=confidence,
             explanation=explanation,
             audit_event=audit_event,
+            intelligence_context=intelligence_context,
         )
 
     def to_dict(self) -> dict[str, Any]:
