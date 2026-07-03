@@ -223,6 +223,28 @@ The endpoint accepts an item/location/environment request plus normalized foreca
 
 This endpoint is stateless and does not persist signals. It does not mutate inventory, create stock movements, create purchase orders, approve purchase orders, or replace the inventory ledger.
 
+## Phase 2Z Explainability Contracts
+
+The Explainability package defines enterprise reporting contracts for future forecast explanation, confidence, evidence, diagnostics, and manager-readable narratives.
+
+This first Phase 2Z pass adds contracts only:
+
+```text
+src/invyra_forecasting/explainability/
+  objects.py
+```
+
+Initial explainability objects include:
+
+- `EvidenceSummary`
+- `ConfidenceBreakdown`
+- `DiagnosticFinding`
+- `DiagnosticReport`
+- `RecommendationNarrative`
+- `ForecastExplanation`
+
+These contracts preserve advisory-only governance and provide the stable object model that later Phase 2Z passes will use for explanation builders, diagnostics, confidence reports, and enterprise recommendation summaries.
+
 ## Quick Start
 
 ```bash
