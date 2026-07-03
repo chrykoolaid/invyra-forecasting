@@ -1,0 +1,11 @@
+from invyra_forecasting.services import ForecastingService, run_item_forecast_with_registry_intelligence
+from invyra_forecasting.services.forecasting_service import ForecastingService as DirectForecastingService
+from invyra_forecasting.services.intelligence_forecasting import (
+    run_item_forecast_with_registry_intelligence as DirectRegistryHelper,
+)
+
+
+def test_services_package_exports_forecasting_service_and_registry_helper():
+    assert ForecastingService is DirectForecastingService
+    assert run_item_forecast_with_registry_intelligence is DirectRegistryHelper
+    assert callable(run_item_forecast_with_registry_intelligence)
