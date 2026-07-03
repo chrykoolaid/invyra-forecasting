@@ -211,6 +211,18 @@ The orchestrator accepts an `AdvisoryForecastRequest` for one item/location/envi
 
 The orchestration layer still does not mutate inventory, create stock movements, create purchase orders, approve purchase orders, or replace the inventory ledger.
 
+## Phase 2Y Advisory API Wiring
+
+The optional FastAPI wrapper exposes the advisory orchestration layer through:
+
+```text
+POST /advisory/forecast
+```
+
+The endpoint accepts an item/location/environment request plus normalized forecast signals. It builds an in-memory request-scoped registry, runs the advisory orchestration service, and returns the explainable forecast response.
+
+This endpoint is stateless and does not persist signals. It does not mutate inventory, create stock movements, create purchase orders, approve purchase orders, or replace the inventory ledger.
+
 ## Quick Start
 
 ```bash
@@ -241,20 +253,21 @@ The FastAPI layer is an integration wrapper. The core engine runs directly in Py
 uvicorn invyra_forecasting.api.app:app --reload
 ```
 
-Phase 1 routes:
+Phase routes include:
 
 - `GET /health`
 - `POST /forecasts/item`
 - `POST /forecasts/batch`
 - `POST /risk/stockout`
 - `POST /recommendations/reorder`
+- `POST /advisory/forecast`
 - `GET /snapshots/{snapshot_id}`
 - `GET /audit/events`
 - `POST /audit/override`
 - `POST /accuracy/evaluate`
 - `GET /accuracy/item/{item_id}`
 
-The forecast, risk, and reorder endpoints call the real Python forecasting service through typed API payload contracts. Snapshot, audit, accuracy, and confidence recalibration foundations provide traceability and proof of forecast quality.
+The forecast, risk, reorder, and advisory endpoints call the real Python forecasting service through typed API payload contracts. Snapshot, audit, accuracy, and confidence recalibration foundations provide traceability and proof of forecast quality.
 
 ## API Examples
 
