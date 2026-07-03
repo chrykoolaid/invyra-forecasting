@@ -298,3 +298,13 @@ Phase 3L adds a test-only boundary contract confirming the registry-intelligence
 Phase 3M documents Phase 3K and Phase 3L completion and keeps the public README aligned with helper-boundary governance.
 
 This is a documentation-only phase. It does not change runtime behavior, forecast calculations, recommendations, inventory, stock movements, or purchase-order behavior.
+
+## Phase 3N README Boundary Marker Contract
+
+Phase 3N adds a test-only contract confirming README boundary status markers for Phase 3K through Phase 3M remain present.
+
+## Phase 3O Phase 3N Status Notes
+
+Phase 3O documents Phase 3N completion and keeps the README aligned with the latest documentation-boundary contract.
+
+This is a documentation-only phase. It does not change runtime behavior, forecast calculations, recommendations, inventory, stock movements, or purchase-order behavior.
