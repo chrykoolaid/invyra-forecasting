@@ -10,12 +10,12 @@ from invyra_forecasting.pipeline.weighting import weight_signal
 from invyra_forecasting.signals.schema import ForecastSignal, ForecastSignalType
 
 
-class ForecastIntelligencePipeline:
+class ForecastSignalIngestionPipeline:
     """Converts normalized signals into forecast intelligence objects.
 
-    This pipeline is intentionally advisory and read-only. It validates,
-    scores, weights, extracts features, and preserves evidence. It does not
-    write stock, create movements, create purchase orders, or approve orders.
+    This is the low-level signal-to-object pipeline. The registry-backed
+    intelligence builder remains available from ``invyra_forecasting.intelligence``.
+    The class is read-only and preserves the advisory forecasting boundary.
     """
 
     def __init__(self, *, weight_overrides: dict[ForecastSignalType, float] | None = None) -> None:
@@ -28,6 +28,9 @@ class ForecastIntelligencePipeline:
 
     def ingest_many(self, signals: Iterable[ForecastSignal]) -> list[ForecastIntelligenceObject]:
         return [self.ingest(signal) for signal in signals]
+
+
+ForecastIntelligencePipeline = ForecastSignalIngestionPipeline
 
 
 def build_forecast_intelligence_object(
