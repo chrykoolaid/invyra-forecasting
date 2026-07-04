@@ -74,6 +74,12 @@ class BaselineExplainableDemandModel:
             explanation.append("Days of cover is unknown because on-hand stock or demand evidence is unavailable.")
         else:
             explanation.append(f"Projected days of cover is {projected_days_of_cover:.4f} days.")
+        if model_input.engineered_features:
+            explanation.append(
+                f"Model handoff includes {len(model_input.engineered_features)} typed engineered feature(s) for explainability context."
+            )
+        else:
+            explanation.append("Model handoff includes no typed engineered features.")
         if model_input.evidence_refs:
             explanation.append(f"Forecast is linked to {len(model_input.evidence_refs)} evidence reference(s).")
         else:
