@@ -318,3 +318,13 @@ Phase 3P adds a test-only contract confirming README Phase 3N and Phase 3O marke
 Phase 3Q documents Phase 3P completion and keeps the README aligned with the latest documentation-marker contract.
 
 This is a documentation-only phase. It does not change runtime behavior, forecast calculations, recommendations, inventory, stock movements, or purchase-order behavior.
+
+## Phase 3R README Phase 3Q Marker Contract
+
+Phase 3R adds a test-only contract confirming README Phase 3P and Phase 3Q markers remain present.
+
+## Phase 3S Phase 3R Status Notes
+
+Phase 3S documents Phase 3R completion and keeps the README aligned with the latest documentation-marker contract.
+
+This is a documentation-only phase. It does not change runtime behavior, forecast calculations, recommendations, inventory, stock movements, or purchase-order behavior.
