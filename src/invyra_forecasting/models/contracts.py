@@ -4,6 +4,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Any
 
 from invyra_forecasting.constants import Environment
+from invyra_forecasting.features.feature_contracts import ForecastFeature
 
 
 @dataclass(frozen=True)
@@ -23,11 +24,13 @@ class ForecastModelInput:
     confidence: float
     evidence_refs: tuple[str, ...]
     feature_summary: dict[str, Any] = field(default_factory=dict)
+    engineered_features: tuple[ForecastFeature, ...] = ()
 
     def to_dict(self) -> dict[str, Any]:
         payload = asdict(self)
         payload["environment"] = self.environment.value
         payload["evidence_refs"] = list(self.evidence_refs)
+        payload["engineered_features"] = [feature.to_dict() for feature in self.engineered_features]
         return payload
 
 
