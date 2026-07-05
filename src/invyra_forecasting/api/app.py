@@ -12,6 +12,7 @@ from invyra_forecasting.api.accuracy_contracts import AccuracyEvaluationRequest
 from invyra_forecasting.api.advisory_contracts import AdvisoryForecastApiRequest
 from invyra_forecasting.api.contracts import BatchForecastRequest, ForecastRequest, OverrideAuditRequest
 from invyra_forecasting.api.inventory_contracts import ItemDetailsForecastPanelRequest
+from invyra_forecasting.api.production_contracts import paginated_envelope, production_envelope
 from invyra_forecasting.api.runtime import ALLOWED_HEADERS, ALLOWED_METHODS, allowed_origins_from_env
 from invyra_forecasting.api.serializers import to_primitive
 from invyra_forecasting.audit import JsonlAuditStore, create_override_audit_event
@@ -19,6 +20,7 @@ from invyra_forecasting.config import ForecastingConfig
 from invyra_forecasting.data.repositories import FileSnapshotRepository
 from invyra_forecasting.data.validation import ValidationError
 from invyra_forecasting.integrations.inventory import ItemDetailsForecastBoundary
+from invyra_forecasting.models import ModelRegistryEntryV2, ModelRegistryV2, build_default_model_registry
 from invyra_forecasting.orchestration import AdvisoryForecastOrchestrator
 from invyra_forecasting.services import ForecastingService
 from invyra_forecasting.signals import ForecastSignalValidationError, InMemoryForecastSignalRegistry
@@ -78,9 +80,81 @@ def _run_snapshot(request: ForecastRequest):
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
+def _default_registry_v2() -> ModelRegistryV2:
+    registry = ModelRegistryV2()
+    for model in build_default_model_registry().all():
+        registry.register(
+            ModelRegistryEntryV2(
+                model_id=model.model_id,
+                model_name=model.model_name,
+                model_version=model.model_version,
+                status=model.status,
+                activated_at_utc="2026-07-05T00:00:00+00:00" if model.status.value == "PRODUCTION" else None,
+                metadata={"strengths": list(model.strengths), "limitations": list(model.limitations)},
+            )
+        )
+    return registry
+
+
+def _slice(items: list[dict], *, limit: int, offset: int) -> list[dict]:
+    return items[offset : offset + limit]
+
+
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok", "engine": "invyra-forecasting", "version": __version__, "mode": "advisory"}
+
+
+@app.get("/v1")
+def production_api_metadata() -> dict:
+    return production_envelope(
+        "api_metadata",
+        {
+            "engine": "invyra-forecasting",
+            "engine_version": __version__,
+            "api_version": "v1",
+            "stable_resources": [
+                "/v1/forecasts/item",
+                "/v1/snapshots/{snapshot_id}",
+                "/v1/evaluations/accuracy/item/{item_id}",
+                "/v1/models/registry",
+                "/v1/models/capabilities",
+            ],
+        },
+    )
+
+
+@app.post("/v1/forecasts/item")
+def production_forecast_item(payload: ForecastRequest) -> dict:
+    snapshot = _run_snapshot(payload)
+    return production_envelope("forecast_snapshot", to_primitive(snapshot), write_snapshot=payload.write_snapshot)
+
+
+@app.get("/v1/snapshots/{snapshot_id}")
+def production_get_snapshot(snapshot_id: str) -> dict:
+    snapshot = FileSnapshotRepository(ForecastingConfig.from_env().snapshot_dir).get(snapshot_id)
+    if snapshot is None:
+        raise HTTPException(status_code=404, detail=f"Snapshot not found: {snapshot_id}")
+    return production_envelope("snapshot", snapshot, snapshot_id=snapshot_id)
+
+
+@app.get("/v1/evaluations/accuracy/item/{item_id}")
+def production_get_item_accuracy(item_id: str, location_id: str | None = None, environment: str | None = None, limit: int = 100, offset: int = 0) -> dict:
+    results = AccuracyService(ForecastingConfig.from_env()).list_item_accuracy(item_id=item_id, location_id=location_id, environment=environment, limit=limit + offset)
+    items = _slice(results, limit=limit, offset=offset)
+    return paginated_envelope("accuracy_evaluations", items, limit=limit, offset=offset, total=len(results), item_id=item_id, location_id=location_id, environment=environment)
+
+
+@app.get("/v1/models/registry")
+def production_model_registry(limit: int = 100, offset: int = 0) -> dict:
+    items = [entry.to_dict() for entry in _default_registry_v2().all()]
+    return paginated_envelope("model_registry", _slice(items, limit=limit, offset=offset), limit=limit, offset=offset, total=len(items))
+
+
+@app.get("/v1/models/capabilities")
+def production_model_capabilities(forecast_type: str = "item_location_demand", forecast_days: int = 30, limit: int = 100, offset: int = 0) -> dict:
+    items = [entry.to_dict() for entry in _default_registry_v2().compatible(forecast_type=forecast_type, forecast_days=forecast_days)]
+    return paginated_envelope("model_capabilities", _slice(items, limit=limit, offset=offset), limit=limit, offset=offset, total=len(items), forecast_type=forecast_type, forecast_days=forecast_days)
 
 
 @app.post("/forecasts/item")
