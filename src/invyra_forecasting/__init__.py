@@ -7,6 +7,13 @@ from invyra_forecasting.monitoring import (
     InMemoryForecastMonitoringRepository,
     MonitoringHealthStatus,
 )
+from invyra_forecasting.performance import (
+    InMemoryPerformanceBenchmarkRepository,
+    PerformanceBenchmarkRecord,
+    PerformanceBenchmarkService,
+    PerformanceHealthStatus,
+    PerformanceSummary,
+)
 from invyra_forecasting.services.forecasting_service import ForecastingService
 
 __all__ = [
@@ -16,5 +23,10 @@ __all__ = [
     "ForecastMonitoringSnapshot",
     "InMemoryForecastMonitoringRepository",
     "MonitoringHealthStatus",
+    "InMemoryPerformanceBenchmarkRepository",
+    "PerformanceBenchmarkRecord",
+    "PerformanceBenchmarkService",
+    "PerformanceHealthStatus",
+    "PerformanceSummary",
 ]
 __version__ = "0.1.0"
