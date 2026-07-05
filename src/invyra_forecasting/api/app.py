@@ -19,6 +19,7 @@ from invyra_forecasting.audit import JsonlAuditStore, create_override_audit_even
 from invyra_forecasting.config import ForecastingConfig
 from invyra_forecasting.data.repositories import FileSnapshotRepository
 from invyra_forecasting.data.validation import ValidationError
+from invyra_forecasting.hardening import ProductionHardeningService
 from invyra_forecasting.integrations.inventory import ItemDetailsForecastBoundary
 from invyra_forecasting.models import ModelRegistryEntryV2, ModelRegistryV2, build_default_model_registry
 from invyra_forecasting.monitoring import ForecastMonitoringService
@@ -123,6 +124,7 @@ def production_api_metadata() -> dict:
                 "/v1/models/capabilities",
                 "/v1/monitoring/summary",
                 "/v1/performance/summary",
+                "/v1/hardening/summary",
             ],
         },
     )
@@ -169,6 +171,12 @@ def production_monitoring_summary() -> dict:
 @app.get("/v1/performance/summary")
 def production_performance_summary() -> dict:
     return production_envelope("performance_summary", PerformanceBenchmarkService().summarize().to_dict())
+
+
+@app.get("/v1/hardening/summary")
+def production_hardening_summary() -> dict:
+    service = ProductionHardeningService()
+    return production_envelope("hardening_summary", service.summarize().to_dict(), retry_policy=service.retry_policy.to_dict())
 
 
 @app.post("/forecasts/item")
