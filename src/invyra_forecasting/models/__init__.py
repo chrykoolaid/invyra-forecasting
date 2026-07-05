@@ -18,6 +18,13 @@ from invyra_forecasting.models.performance_selection import (
     ModelSelectionContext,
     PerformanceAwareModelSelector,
 )
+from invyra_forecasting.models.registry_v2 import (
+    ModelCompatibilityProfile,
+    ModelGovernanceEvent,
+    ModelGovernanceEventType,
+    ModelRegistryEntryV2,
+    ModelRegistryV2,
+)
 from invyra_forecasting.models.service import ForecastModelService
 from invyra_forecasting.models.simple import SimpleDemandForecaster
 
@@ -29,10 +36,15 @@ __all__ = [
     "ForecastModelOutput",
     "ForecastModelRegistry",
     "ForecastModelService",
+    "ModelCompatibilityProfile",
+    "ModelGovernanceEvent",
+    "ModelGovernanceEventType",
     "ModelLifecycleStatus",
     "ModelPerformanceRecord",
     "ModelPerformanceRepository",
     "ModelPerformanceScore",
+    "ModelRegistryEntryV2",
+    "ModelRegistryV2",
     "ModelSelectionAuditRecord",
     "ModelSelectionContext",
     "ModelSelectionResult",
