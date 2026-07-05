@@ -10,6 +10,14 @@ from invyra_forecasting.models.orchestration import (
     RegisteredForecastModel,
     build_default_model_registry,
 )
+from invyra_forecasting.models.performance_selection import (
+    ModelPerformanceRecord,
+    ModelPerformanceRepository,
+    ModelPerformanceScore,
+    ModelSelectionAuditRecord,
+    ModelSelectionContext,
+    PerformanceAwareModelSelector,
+)
 from invyra_forecasting.models.service import ForecastModelService
 from invyra_forecasting.models.simple import SimpleDemandForecaster
 
@@ -22,8 +30,14 @@ __all__ = [
     "ForecastModelRegistry",
     "ForecastModelService",
     "ModelLifecycleStatus",
+    "ModelPerformanceRecord",
+    "ModelPerformanceRepository",
+    "ModelPerformanceScore",
+    "ModelSelectionAuditRecord",
+    "ModelSelectionContext",
     "ModelSelectionResult",
     "OrchestratedForecastResult",
+    "PerformanceAwareModelSelector",
     "RegisteredForecastModel",
     "SimpleDemandForecaster",
     "build_default_model_registry",
