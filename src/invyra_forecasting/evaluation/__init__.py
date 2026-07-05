@@ -1,5 +1,12 @@
 """Forecast evaluation foundation for read-only performance measurement."""
 
+from invyra_forecasting.evaluation.drift import (
+    DriftDetectionPolicy,
+    DriftDetectionService,
+    DriftIndicator,
+    DriftReport,
+    DriftSeverity,
+)
 from invyra_forecasting.evaluation.metrics import (
     ForecastEvaluationResult,
     ForecastEvaluationService,
@@ -14,6 +21,11 @@ from invyra_forecasting.evaluation.persistence import (
 )
 
 __all__ = [
+    "DriftDetectionPolicy",
+    "DriftDetectionService",
+    "DriftIndicator",
+    "DriftReport",
+    "DriftSeverity",
     "EvaluationPersistenceService",
     "EvaluationQuery",
     "ForecastEvaluationRecord",
