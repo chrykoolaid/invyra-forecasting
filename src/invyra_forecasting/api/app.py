@@ -21,6 +21,7 @@ from invyra_forecasting.data.repositories import FileSnapshotRepository
 from invyra_forecasting.data.validation import ValidationError
 from invyra_forecasting.integrations.inventory import ItemDetailsForecastBoundary
 from invyra_forecasting.models import ModelRegistryEntryV2, ModelRegistryV2, build_default_model_registry
+from invyra_forecasting.monitoring import ForecastMonitoringService
 from invyra_forecasting.orchestration import AdvisoryForecastOrchestrator
 from invyra_forecasting.services import ForecastingService
 from invyra_forecasting.signals import ForecastSignalValidationError, InMemoryForecastSignalRegistry
@@ -119,6 +120,7 @@ def production_api_metadata() -> dict:
                 "/v1/evaluations/accuracy/item/{item_id}",
                 "/v1/models/registry",
                 "/v1/models/capabilities",
+                "/v1/monitoring/summary",
             ],
         },
     )
@@ -155,6 +157,11 @@ def production_model_registry(limit: int = 100, offset: int = 0) -> dict:
 def production_model_capabilities(forecast_type: str = "item_location_demand", forecast_days: int = 30, limit: int = 100, offset: int = 0) -> dict:
     items = [entry.to_dict() for entry in _default_registry_v2().compatible(forecast_type=forecast_type, forecast_days=forecast_days)]
     return paginated_envelope("model_capabilities", _slice(items, limit=limit, offset=offset), limit=limit, offset=offset, total=len(items), forecast_type=forecast_type, forecast_days=forecast_days)
+
+
+@app.get("/v1/monitoring/summary")
+def production_monitoring_summary() -> dict:
+    return production_envelope("forecast_monitoring_summary", ForecastMonitoringService().snapshot().to_dict())
 
 
 @app.post("/forecasts/item")
