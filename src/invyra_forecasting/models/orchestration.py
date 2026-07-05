@@ -153,11 +153,7 @@ def build_default_model_registry() -> ForecastModelRegistry:
 
 
 class ForecastModelOrchestrator:
-    """Selects and runs eligible advisory forecast models.
-
-    The orchestrator does not mutate inventory, create stock movements, create
-    purchase orders, approve purchase orders, or override ledger truth.
-    """
+    """Selects and runs eligible advisory forecast models."""
 
     def __init__(
         self,
@@ -205,7 +201,7 @@ class ForecastModelOrchestrator:
                 f"Selected {selected.model_name} version {selected.model_version} because it ranked highest for {forecast_type} over {forecast_days} days.",
                 f"Winning adaptive ranking score was {selected_score.score:.6f}.",
                 f"Ranking configuration version was {selected_score.weight_version}.",
-                "Selection remained advisory-only, read-only, and did not mutate inventory, movements, purchase orders, or ledger truth.",
+                "Selection remained advisory-only and read-only.",
             ),
             warnings=warnings,
             candidate_scores=candidate_scores,
@@ -238,7 +234,8 @@ class ForecastModelOrchestrator:
                 "forecast_type": forecast_type,
                 "forecast_days": forecast_days,
                 "eligible_model_count": 1 + len(selection.alternative_models_considered),
-                "selection_policy": "adaptive_model_ranking_phase_7a",
+                "selection_policy": "performance_aware",
+                "selection_policy_version": "adaptive_model_ranking_phase_7a",
                 "ranking_configuration_version": selection.candidate_scores[0].weight_version if selection.candidate_scores else None,
                 "advisory_only": output.advisory_only,
                 "read_only": True,
