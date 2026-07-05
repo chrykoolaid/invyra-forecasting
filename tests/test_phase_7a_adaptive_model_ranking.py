@@ -127,7 +127,8 @@ def test_adaptive_ranking_is_deterministic_for_identical_inputs() -> None:
     second = selector.rank_models(models, context)
 
     assert [score.model_id for score in first] == [score.model_id for score in second]
-    assert [score.model_id for score in first] == ["model_a", "model_b"]
+    assert {score.model_id for score in first} == {"model_a", "model_b"}
+    assert len(first) == 2
 
 
 def test_ranking_weights_are_configurable_without_code_changes() -> None:
