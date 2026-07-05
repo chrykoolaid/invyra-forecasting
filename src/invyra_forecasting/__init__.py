@@ -1,5 +1,15 @@
 """Invyra Forecasting Engine."""
 
+from invyra_forecasting.hardening import (
+    FailureClassification,
+    FailureSeverity,
+    HardeningSummary,
+    InMemoryRecoveryRepository,
+    ProductionHardeningService,
+    RecoveryAction,
+    RecoveryRecord,
+    RetryPolicy,
+)
 from invyra_forecasting.monitoring import (
     ForecastMonitoringEvent,
     ForecastMonitoringService,
@@ -18,6 +28,14 @@ from invyra_forecasting.services.forecasting_service import ForecastingService
 
 __all__ = [
     "ForecastingService",
+    "FailureClassification",
+    "FailureSeverity",
+    "HardeningSummary",
+    "InMemoryRecoveryRepository",
+    "ProductionHardeningService",
+    "RecoveryAction",
+    "RecoveryRecord",
+    "RetryPolicy",
     "ForecastMonitoringEvent",
     "ForecastMonitoringService",
     "ForecastMonitoringSnapshot",
