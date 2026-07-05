@@ -56,7 +56,6 @@ Current locked guarantees:
 - Inventory ledger remains the source of truth.
 - The engine does not mutate stock.
 - The engine does not create stock movements.
-- The engine does not create purchase orders.
 - The engine does not create or approve purchase orders.
 - Intelligence metadata is explainability context, not an operational write path.
 - Base service forecast math remains separate from optional registry-backed intelligence helpers.
@@ -201,7 +200,156 @@ ForecastModelInput
         |
         v
 BaselineExplainableDemandModel
+        |
+        v
+ForecastModelOutput
 ```
+
+The Phase 2W baseline model is deterministic and explainable. It is not an advanced ML model and does not make fake AI claims. Future models can replace it while keeping the same handoff contract.
+
+The model output remains advisory-only and does not mutate inventory, create stock movements, create purchase orders, approve purchase orders, or replace the inventory ledger.
+
+## Phase 2X Intelligence Summary Adapter
+
+The intelligence summary adapter creates compact, snapshot-friendly context from registry-backed intelligence results.
+
+This phase adds:
+
+```text
+src/invyra_forecasting/intelligence_summary.py
+```
+
+The summary is designed for metadata and explainability. It does not change forecast math or recommendation decisions.
+
+## Phase 2Y Snapshot Intelligence Context
+
+Forecast snapshots support optional `intelligence_context` metadata.
+
+The field is backward-compatible and defaults to `None` for existing callers.
+
+## Phase 2Z Service Intelligence Context
+
+`ForecastingService.run_item_forecast()` supports optional `intelligence_context` passthrough into forecast snapshots.
+
+Default service behavior remains unchanged when no context is provided.
+
+## Phase 3A Registry Intelligence Forecast Helper
+
+Phase 3A adds a helper path that builds registry-backed intelligence context and passes it into the existing forecasting service.
+
+The helper attaches intelligence context to snapshots while preserving base forecasting behavior.
+
+## Phase 3B Intelligence Explanation Context
+
+Phase 3B adds explanation helpers that convert intelligence context into readable drivers and warnings.
+
+These helpers enrich explanations only through metadata. They do not change forecast math or recommendations.
+
+## Phase 3C Helper Explanation Enrichment
+
+Phase 3C wires the Phase 3B explanation enrichment into the registry-intelligence helper path.
+
+The base forecasting service remains unchanged.
+
+## Phase 3D Helper Contract Hardening
+
+Phase 3D adds a safe helper contract test to keep the registry-intelligence helper importable and stable.
+
+This is a test-only hardening pass with no production code changes.
+
+## Phase 3E Governance Status Notes
+
+Phase 3E documents the completed registry-backed intelligence path and its governance boundaries.
+
+This is a documentation-only phase. It does not change runtime behavior, forecast calculations, recommendations, inventory, stock movements, or purchase-order behavior.
+
+## Phase 3F Helper Separation Contract
+
+Phase 3F adds a test-only separation contract confirming the base forecasting service does not import or directly depend on the registry-intelligence helper.
+
+## Phase 3G Helper Advisory Guardrail Contract
+
+Phase 3G adds a test-only advisory guardrail contract confirming the helper does not introduce stock mutation, stock movement creation, purchase-order creation, or purchase-order approval paths.
+
+## Phase 3H Service Helper Export
+
+Phase 3H exports the registry-intelligence helper from `invyra_forecasting.services` while preserving the direct helper import path.
+
+This is an import convenience for future Base44/Desktop integration code. It does not change forecasting behavior.
+
+## Phase 3I Service Import Compatibility
+
+Phase 3I adds compatibility tests proving both package-level and direct import paths remain valid for the base forecasting service and registry-intelligence helper.
+
+## Phase 3J Service Import Status Notes
+
+Phase 3J documents the stable service import paths and updates the README status after Phase 3F through Phase 3I.
+
+This is a documentation-only phase. It does not change runtime behavior, forecast calculations, recommendations, inventory, stock movements, or purchase-order behavior.
+
+## Phase 3K README Phase Marker Contract
+
+Phase 3K adds a test-only contract confirming README phase markers and stable service import path documentation remain present.
+
+## Phase 3L Service Helper Boundary Contract
+
+Phase 3L adds a test-only boundary contract confirming the registry-intelligence helper remains exported while its implementation stays isolated from the base forecasting service core module.
+
+## Phase 3M Boundary Status Notes
+
+Phase 3M documents Phase 3K and Phase 3L completion and keeps the public README aligned with helper-boundary governance.
+
+This is a documentation-only phase. It does not change runtime behavior, forecast calculations, recommendations, inventory, stock movements, or purchase-order behavior.
+
+## Phase 3N README Boundary Marker Contract
+
+Phase 3N adds a test-only contract confirming README boundary status markers for Phase 3K through Phase 3M remain present.
+
+## Phase 3O Phase 3N Status Notes
+
+Phase 3O documents Phase 3N completion and keeps the README aligned with the latest documentation-boundary contract.
+
+This is a documentation-only phase. It does not change runtime behavior, forecast calculations, recommendations, inventory, stock movements, or purchase-order behavior.
+
+## Phase 3P README Phase 3O Marker Contract
+
+Phase 3P adds a test-only contract confirming README Phase 3N and Phase 3O markers remain present.
+
+## Phase 3Q Phase 3P Status Notes
+
+Phase 3Q documents Phase 3P completion and keeps the README aligned with the latest documentation-marker contract.
+
+This is a documentation-only phase. It does not change runtime behavior, forecast calculations, recommendations, inventory, stock movements, or purchase-order behavior.
+
+## Phase 3R README Phase 3Q Marker Contract
+
+Phase 3R adds a test-only contract confirming README Phase 3P and Phase 3Q markers remain present.
+
+## Phase 3S Phase 3R Status Notes
+
+Phase 3S documents Phase 3R completion and keeps the README aligned with the latest documentation-marker contract.
+
+This is a documentation-only phase. It does not change runtime behavior, forecast calculations, recommendations, inventory, stock movements, or purchase-order behavior.
+
+## Phase 3T README Phase 3S Marker Contract
+
+Phase 3T adds a test-only contract confirming README Phase 3R and Phase 3S markers remain present.
+
+## Phase 3U Phase 3T Status Notes
+
+Phase 3U documents Phase 3T completion and keeps the README aligned with the latest documentation-marker contract.
+
+This is a documentation-only phase. It does not change runtime behavior, forecast calculations, recommendations, inventory, stock movements, or purchase-order behavior.
+
+## Phase 3V README Phase 3U Marker Contract
+
+Phase 3V adds a test-only contract confirming README Phase 3T and Phase 3U markers remain present.
+
+## Phase 3W Phase 3V Status Notes
+
+Phase 3W documents Phase 3V completion and keeps the README aligned with the latest documentation-marker contract.
+
+This is a documentation-only phase. It does not change runtime behavior, forecast calculations, recommendations, inventory, stock movements, or purchase-order behavior.
 
 ## Phase 7A Adaptive Model Ranking
 
