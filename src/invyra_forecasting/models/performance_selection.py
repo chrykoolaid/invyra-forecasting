@@ -2,9 +2,14 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
-from typing import Iterable
+from typing import Iterable, Protocol
 
-from invyra_forecasting.models.orchestration import RegisteredForecastModel
+
+class RegisteredModelForSelection(Protocol):
+    model_id: str
+    model_name: str
+    supported_forecast_types: tuple[str, ...]
+    supported_horizons_days: tuple[int, ...]
 
 
 @dataclass(frozen=True)
@@ -115,7 +120,7 @@ class PerformanceAwareModelSelector:
     def __init__(self, repository: ModelPerformanceRepository | None = None) -> None:
         self._repository = repository or ModelPerformanceRepository()
 
-    def score_model(self, model: RegisteredForecastModel, context: ModelSelectionContext) -> ModelPerformanceScore:
+    def score_model(self, model: RegisteredModelForSelection, context: ModelSelectionContext) -> ModelPerformanceScore:
         record = self._repository.get(model.model_id)
         warnings: list[str] = []
         rationale: list[str] = []
@@ -162,7 +167,7 @@ class PerformanceAwareModelSelector:
 
     def rank_models(
         self,
-        models: Iterable[RegisteredForecastModel],
+        models: Iterable[RegisteredModelForSelection],
         context: ModelSelectionContext,
     ) -> tuple[ModelPerformanceScore, ...]:
         scores = [self.score_model(model, context) for model in models]
@@ -183,7 +188,7 @@ class PerformanceAwareModelSelector:
 
     def _context_fit(
         self,
-        model: RegisteredForecastModel,
+        model: RegisteredModelForSelection,
         record: ModelPerformanceRecord | None,
         context: ModelSelectionContext,
     ) -> float:
