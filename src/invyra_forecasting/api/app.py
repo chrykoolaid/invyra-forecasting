@@ -23,6 +23,7 @@ from invyra_forecasting.integrations.inventory import ItemDetailsForecastBoundar
 from invyra_forecasting.models import ModelRegistryEntryV2, ModelRegistryV2, build_default_model_registry
 from invyra_forecasting.monitoring import ForecastMonitoringService
 from invyra_forecasting.orchestration import AdvisoryForecastOrchestrator
+from invyra_forecasting.performance import PerformanceBenchmarkService
 from invyra_forecasting.services import ForecastingService
 from invyra_forecasting.signals import ForecastSignalValidationError, InMemoryForecastSignalRegistry
 
@@ -121,6 +122,7 @@ def production_api_metadata() -> dict:
                 "/v1/models/registry",
                 "/v1/models/capabilities",
                 "/v1/monitoring/summary",
+                "/v1/performance/summary",
             ],
         },
     )
@@ -162,6 +164,11 @@ def production_model_capabilities(forecast_type: str = "item_location_demand", f
 @app.get("/v1/monitoring/summary")
 def production_monitoring_summary() -> dict:
     return production_envelope("forecast_monitoring_summary", ForecastMonitoringService().snapshot().to_dict())
+
+
+@app.get("/v1/performance/summary")
+def production_performance_summary() -> dict:
+    return production_envelope("performance_summary", PerformanceBenchmarkService().summarize().to_dict())
 
 
 @app.post("/forecasts/item")
