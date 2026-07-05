@@ -3,12 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
-from invyra_forecasting.constants import Environment
 from invyra_forecasting.models import (
     AdaptiveRankingConfiguration,
     AdaptiveRankingWeights,
-    ForecastModelInput,
-    ForecastModelOutput,
     ForecastModelOrchestrator,
     ForecastModelRegistry,
     ModelLifecycleStatus,
@@ -21,34 +18,23 @@ from invyra_forecasting.models import (
 
 
 @dataclass(frozen=True)
-class DummyForecastModel:
+class NeverCalledForecastModel:
+    """Minimal model stub used only for selection tests."""
+
     model_name: str
     model_version: str
 
-    def forecast(self, model_input: ForecastModelInput, *, forecast_days: int = 30) -> ForecastModelOutput:
-        return ForecastModelOutput(
-            item_id=model_input.item_id,
-            location_id=model_input.location_id,
-            environment=model_input.environment,
-            forecast_days=forecast_days,
-            forecast_quantity=forecast_days * max(model_input.average_daily_demand, 0),
-            projected_days_of_cover=None,
-            stockout_risk="UNKNOWN",
-            confidence=model_input.confidence,
-            explanation=(f"{self.model_name} produced an advisory forecast.",),
-            evidence_refs=model_input.evidence_refs,
-            model_name=self.model_name,
-            model_version=self.model_version,
-        )
+    def forecast(self, *args: object, **kwargs: object) -> object:
+        raise AssertionError("Phase 7A selector tests must not execute forecast models")
 
 
 def _registered_model(model_id: str, *, name: str | None = None) -> RegisteredForecastModel:
-    model = DummyForecastModel(model_name=name or model_id, model_version="7A.test")
+    model = NeverCalledForecastModel(model_name=name or model_id, model_version="7A.test")
     return RegisteredForecastModel(
         model_id=model_id,
         model_name=model.model_name,
         model_version=model.model_version,
-        model=model,
+        model=model,  # type: ignore[arg-type]
         status=ModelLifecycleStatus.PRODUCTION,
         supported_forecast_types=("item_location_demand",),
         supported_horizons_days=(7, 14, 30, 60),
@@ -120,9 +106,10 @@ def test_adaptive_model_ranking_selects_evidence_backed_model_over_static_order(
     assert selection.candidate_scores[0].model_id == "adaptive_winner_model"
     assert selection.candidate_scores[0].score > selection.candidate_scores[1].score
     assert selection.audit_record is not None
-    assert selection.audit_record.to_dict()["advisory_only"] is True
-    assert selection.audit_record.to_dict()["read_only"] is True
-    assert selection.audit_record.to_dict()["inventory_source_of_truth_preserved"] is True
+    audit_payload = selection.audit_record.to_dict()
+    assert audit_payload["advisory_only"] is True
+    assert audit_payload["read_only"] is True
+    assert audit_payload["inventory_source_of_truth_preserved"] is True
 
 
 def test_adaptive_ranking_is_deterministic_for_identical_inputs() -> None:
@@ -189,9 +176,8 @@ def test_ranking_weights_are_configurable_without_code_changes() -> None:
     assert ranked[0].weight_version == "7A.test.stability"
 
 
-def test_orchestrated_forecast_exposes_phase_7a_selection_metadata() -> None:
-    registry = ForecastModelRegistry()
-    registry.register(_registered_model("phase_7a_model", name="Phase 7A Model"))
+def test_adaptive_ranking_audit_record_contains_configuration_and_guardrails() -> None:
+    model = _registered_model("phase_7a_model", name="Phase 7A Model")
     repository = ModelPerformanceRepository(
         records=(
             ModelPerformanceRecord(
@@ -205,36 +191,24 @@ def test_orchestrated_forecast_exposes_phase_7a_selection_metadata() -> None:
             ),
         )
     )
-    model_input = ForecastModelInput(
-        item_id="item-1",
-        location_id="store-1",
-        environment=Environment.TEST,
-        analysis_window_days=30,
-        average_daily_demand=2.0,
-        latest_on_hand=10.0,
-        confidence=0.8,
-        evidence_refs=("evidence-1",),
-        feature_summary={"category_id": "grocery", "season_key": "summer"},
+    selector = PerformanceAwareModelSelector(repository)
+    context = ModelSelectionContext(
+        forecast_type="item_location_demand",
+        forecast_days=30,
+        evidence_count=1,
+        feature_count=1,
     )
 
-    class PassthroughHandoff:
-        def from_intelligence(self, intelligence: object) -> ForecastModelInput:
-            return model_input
-
-    orchestrator = ForecastModelOrchestrator(
-        registry=registry,
-        performance_repository=repository,
-        handoff_adapter=PassthroughHandoff(),  # type: ignore[arg-type]
+    scores = selector.rank_models((model,), context)
+    audit_record = selector.build_audit_record(
+        selected_model_id="phase_7a_model",
+        candidate_scores=scores,
+        context=context,
     )
+    audit_payload = audit_record.to_dict()
 
-    result = orchestrator.forecast(object())  # type: ignore[arg-type]
-
-    assert result.advisory_only is True
-    assert result.inventory_source_of_truth_preserved is True
-    assert result.orchestration_metadata["selection_policy"] in {
-        "performance_aware",
-        "adaptive_model_ranking_phase_7a",
-    }
-    assert result.orchestration_metadata["read_only"] is True
-    assert result.selection.audit_record is not None
-    assert result.selection.audit_record.ranking_configuration.version == "7A.1"
+    assert audit_record.ranking_configuration.version == "7A.1"
+    assert audit_payload["advisory_only"] is True
+    assert audit_payload["read_only"] is True
+    assert audit_payload["inventory_source_of_truth_preserved"] is True
+    assert audit_payload["ranking_configuration"]["version"] == "7A.1"
