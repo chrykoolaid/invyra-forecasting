@@ -25,6 +25,7 @@ from invyra_forecasting.models import ModelRegistryEntryV2, ModelRegistryV2, bui
 from invyra_forecasting.monitoring import ForecastMonitoringService
 from invyra_forecasting.orchestration import AdvisoryForecastOrchestrator
 from invyra_forecasting.performance import PerformanceBenchmarkService
+from invyra_forecasting.readiness import EnterpriseReadinessAuditService
 from invyra_forecasting.services import ForecastingService
 from invyra_forecasting.signals import ForecastSignalValidationError, InMemoryForecastSignalRegistry
 
@@ -103,6 +104,20 @@ def _slice(items: list[dict], *, limit: int, offset: int) -> list[dict]:
     return items[offset : offset + limit]
 
 
+def _stable_v1_resources() -> tuple[str, ...]:
+    return (
+        "/v1/forecasts/item",
+        "/v1/snapshots/{snapshot_id}",
+        "/v1/evaluations/accuracy/item/{item_id}",
+        "/v1/models/registry",
+        "/v1/models/capabilities",
+        "/v1/monitoring/summary",
+        "/v1/performance/summary",
+        "/v1/hardening/summary",
+        "/v1/readiness/summary",
+    )
+
+
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok", "engine": "invyra-forecasting", "version": __version__, "mode": "advisory"}
@@ -116,16 +131,7 @@ def production_api_metadata() -> dict:
             "engine": "invyra-forecasting",
             "engine_version": __version__,
             "api_version": "v1",
-            "stable_resources": [
-                "/v1/forecasts/item",
-                "/v1/snapshots/{snapshot_id}",
-                "/v1/evaluations/accuracy/item/{item_id}",
-                "/v1/models/registry",
-                "/v1/models/capabilities",
-                "/v1/monitoring/summary",
-                "/v1/performance/summary",
-                "/v1/hardening/summary",
-            ],
+            "stable_resources": list(_stable_v1_resources()),
         },
     )
 
@@ -177,6 +183,12 @@ def production_performance_summary() -> dict:
 def production_hardening_summary() -> dict:
     service = ProductionHardeningService()
     return production_envelope("hardening_summary", service.summarize().to_dict(), retry_policy=service.retry_policy.to_dict())
+
+
+@app.get("/v1/readiness/summary")
+def production_readiness_summary() -> dict:
+    report = EnterpriseReadinessAuditService().audit(stable_resources=_stable_v1_resources())
+    return production_envelope("enterprise_readiness_summary", report.to_dict())
 
 
 @app.post("/forecasts/item")
