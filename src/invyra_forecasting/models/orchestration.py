@@ -8,6 +8,13 @@ from invyra_forecasting.intelligence.objects import ForecastIntelligence
 from invyra_forecasting.models.baseline import BaselineExplainableDemandModel
 from invyra_forecasting.models.contracts import ForecastModelInput, ForecastModelOutput
 from invyra_forecasting.models.handoff import ForecastModelHandoffAdapter
+from invyra_forecasting.models.performance_selection import (
+    ModelPerformanceRepository,
+    ModelPerformanceScore,
+    ModelSelectionAuditRecord,
+    ModelSelectionContext,
+    PerformanceAwareModelSelector,
+)
 
 
 class ModelLifecycleStatus(StrEnum):
@@ -69,6 +76,8 @@ class ModelSelectionResult:
     alternative_models_considered: tuple[RegisteredForecastModel, ...]
     selection_reasons: tuple[str, ...]
     warnings: tuple[str, ...] = ()
+    candidate_scores: tuple[ModelPerformanceScore, ...] = ()
+    audit_record: ModelSelectionAuditRecord | None = None
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -76,6 +85,8 @@ class ModelSelectionResult:
             "alternative_models_considered": [model.to_dict() for model in self.alternative_models_considered],
             "selection_reasons": list(self.selection_reasons),
             "warnings": list(self.warnings),
+            "candidate_scores": [score.to_dict() for score in self.candidate_scores],
+            "audit_record": self.audit_record.to_dict() if self.audit_record else None,
         }
 
 
@@ -104,7 +115,7 @@ class OrchestratedForecastResult:
 
 
 class ForecastModelRegistry:
-    """In-memory model registry used by the Phase 5D orchestrator foundation."""
+    """In-memory model registry used by the model orchestrator."""
 
     def __init__(self) -> None:
         self._models: dict[str, RegisteredForecastModel] = {}
@@ -152,23 +163,47 @@ class ForecastModelOrchestrator:
         *,
         registry: ForecastModelRegistry | None = None,
         handoff_adapter: ForecastModelHandoffAdapter | None = None,
+        performance_repository: ModelPerformanceRepository | None = None,
+        model_selector: PerformanceAwareModelSelector | None = None,
     ) -> None:
         self._registry = registry or build_default_model_registry()
         self._handoff_adapter = handoff_adapter or ForecastModelHandoffAdapter()
+        self._model_selector = model_selector or PerformanceAwareModelSelector(performance_repository)
 
-    def select_model(self, *, forecast_type: str = "item_location_demand", forecast_days: int = 30) -> ModelSelectionResult:
+    def select_model(
+        self,
+        *,
+        forecast_type: str = "item_location_demand",
+        forecast_days: int = 30,
+        selection_context: ModelSelectionContext | None = None,
+    ) -> ModelSelectionResult:
         eligible = self._registry.eligible(forecast_type=forecast_type, forecast_days=forecast_days)
         if not eligible:
             raise ValueError(f"No eligible forecast model for {forecast_type} over {forecast_days} days")
-        selected = eligible[0]
-        alternatives = eligible[1:]
+
+        context = selection_context or ModelSelectionContext(forecast_type=forecast_type, forecast_days=forecast_days)
+        candidate_scores = self._model_selector.rank_models(eligible, context)
+        selected_score = candidate_scores[0]
+        model_by_id = {model.model_id: model for model in eligible}
+        selected = model_by_id[selected_score.model_id]
+        alternatives = tuple(model for model in eligible if model.model_id != selected.model_id)
+        audit_record = self._model_selector.build_audit_record(
+            selected_model_id=selected.model_id,
+            candidate_scores=candidate_scores,
+            context=context,
+        )
+        warnings = tuple(warning for score in candidate_scores for warning in score.warnings)
         return ModelSelectionResult(
             selected_model=selected,
             alternative_models_considered=alternatives,
             selection_reasons=(
-                f"Selected {selected.model_name} version {selected.model_version} because it is eligible for {forecast_type} over {forecast_days} days.",
-                "Phase 5D uses deterministic first-eligible selection until performance-aware orchestration is introduced.",
+                f"Selected {selected.model_name} version {selected.model_version} because it ranked highest for {forecast_type} over {forecast_days} days.",
+                f"Winning performance-aware score was {selected_score.score:.6f}.",
+                "Selection remained advisory-only and did not mutate inventory, movements, purchase orders, or ledger truth.",
             ),
+            warnings=warnings,
+            candidate_scores=candidate_scores,
+            audit_record=audit_record,
         )
 
     def forecast(
@@ -178,8 +213,17 @@ class ForecastModelOrchestrator:
         forecast_type: str = "item_location_demand",
         forecast_days: int = 30,
     ) -> OrchestratedForecastResult:
-        selection = self.select_model(forecast_type=forecast_type, forecast_days=forecast_days)
         model_input = self._handoff_adapter.from_intelligence(intelligence)
+        selection_context = self._selection_context_from_model_input(
+            model_input,
+            forecast_type=forecast_type,
+            forecast_days=forecast_days,
+        )
+        selection = self.select_model(
+            forecast_type=forecast_type,
+            forecast_days=forecast_days,
+            selection_context=selection_context,
+        )
         output = selection.selected_model.model.forecast(model_input, forecast_days=forecast_days)
         return OrchestratedForecastResult(
             model_output=output,
@@ -188,7 +232,25 @@ class ForecastModelOrchestrator:
                 "forecast_type": forecast_type,
                 "forecast_days": forecast_days,
                 "eligible_model_count": 1 + len(selection.alternative_models_considered),
+                "selection_policy": "performance_aware",
                 "advisory_only": output.advisory_only,
                 "inventory_source_of_truth_preserved": output.inventory_source_of_truth_preserved,
             },
+        )
+
+    def _selection_context_from_model_input(
+        self,
+        model_input: ForecastModelInput,
+        *,
+        forecast_type: str,
+        forecast_days: int,
+    ) -> ModelSelectionContext:
+        return ModelSelectionContext(
+            forecast_type=forecast_type,
+            forecast_days=forecast_days,
+            average_daily_demand=model_input.average_daily_demand,
+            latest_on_hand=model_input.latest_on_hand,
+            confidence=model_input.confidence,
+            evidence_count=len(model_input.evidence_refs),
+            feature_count=len(model_input.engineered_features),
         )
