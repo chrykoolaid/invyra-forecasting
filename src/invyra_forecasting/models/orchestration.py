@@ -9,6 +9,7 @@ from invyra_forecasting.models.baseline import BaselineExplainableDemandModel
 from invyra_forecasting.models.contracts import ForecastModelInput, ForecastModelOutput
 from invyra_forecasting.models.handoff import ForecastModelHandoffAdapter
 from invyra_forecasting.models.performance_selection import (
+    AdaptiveRankingConfiguration,
     ModelPerformanceRepository,
     ModelPerformanceScore,
     ModelSelectionAuditRecord,
@@ -165,10 +166,14 @@ class ForecastModelOrchestrator:
         handoff_adapter: ForecastModelHandoffAdapter | None = None,
         performance_repository: ModelPerformanceRepository | None = None,
         model_selector: PerformanceAwareModelSelector | None = None,
+        ranking_configuration: AdaptiveRankingConfiguration | None = None,
     ) -> None:
         self._registry = registry or build_default_model_registry()
         self._handoff_adapter = handoff_adapter or ForecastModelHandoffAdapter()
-        self._model_selector = model_selector or PerformanceAwareModelSelector(performance_repository)
+        self._model_selector = model_selector or PerformanceAwareModelSelector(
+            performance_repository,
+            ranking_configuration=ranking_configuration,
+        )
 
     def select_model(
         self,
@@ -198,8 +203,9 @@ class ForecastModelOrchestrator:
             alternative_models_considered=alternatives,
             selection_reasons=(
                 f"Selected {selected.model_name} version {selected.model_version} because it ranked highest for {forecast_type} over {forecast_days} days.",
-                f"Winning performance-aware score was {selected_score.score:.6f}.",
-                "Selection remained advisory-only and did not mutate inventory, movements, purchase orders, or ledger truth.",
+                f"Winning adaptive ranking score was {selected_score.score:.6f}.",
+                f"Ranking configuration version was {selected_score.weight_version}.",
+                "Selection remained advisory-only, read-only, and did not mutate inventory, movements, purchase orders, or ledger truth.",
             ),
             warnings=warnings,
             candidate_scores=candidate_scores,
@@ -232,8 +238,10 @@ class ForecastModelOrchestrator:
                 "forecast_type": forecast_type,
                 "forecast_days": forecast_days,
                 "eligible_model_count": 1 + len(selection.alternative_models_considered),
-                "selection_policy": "performance_aware",
+                "selection_policy": "adaptive_model_ranking_phase_7a",
+                "ranking_configuration_version": selection.candidate_scores[0].weight_version if selection.candidate_scores else None,
                 "advisory_only": output.advisory_only,
+                "read_only": True,
                 "inventory_source_of_truth_preserved": output.inventory_source_of_truth_preserved,
             },
         )
@@ -245,6 +253,7 @@ class ForecastModelOrchestrator:
         forecast_type: str,
         forecast_days: int,
     ) -> ModelSelectionContext:
+        feature_summary = model_input.feature_summary
         return ModelSelectionContext(
             forecast_type=forecast_type,
             forecast_days=forecast_days,
@@ -253,4 +262,9 @@ class ForecastModelOrchestrator:
             confidence=model_input.confidence,
             evidence_count=len(model_input.evidence_refs),
             feature_count=len(model_input.engineered_features),
+            item_id=model_input.item_id,
+            location_id=model_input.location_id,
+            category_id=feature_summary.get("category_id") if isinstance(feature_summary.get("category_id"), str) else None,
+            season_key=feature_summary.get("season_key") if isinstance(feature_summary.get("season_key"), str) else None,
+            demand_pattern=feature_summary.get("demand_pattern") if isinstance(feature_summary.get("demand_pattern"), str) else None,
         )
