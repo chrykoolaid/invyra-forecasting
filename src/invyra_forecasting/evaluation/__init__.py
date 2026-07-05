@@ -6,10 +6,20 @@ from invyra_forecasting.evaluation.metrics import (
     ForecastOutcome,
     ForecastPrediction,
 )
+from invyra_forecasting.evaluation.persistence import (
+    EvaluationPersistenceService,
+    EvaluationQuery,
+    ForecastEvaluationRecord,
+    InMemoryForecastEvaluationRepository,
+)
 
 __all__ = [
+    "EvaluationPersistenceService",
+    "EvaluationQuery",
+    "ForecastEvaluationRecord",
     "ForecastEvaluationResult",
     "ForecastEvaluationService",
     "ForecastOutcome",
     "ForecastPrediction",
+    "InMemoryForecastEvaluationRepository",
 ]
