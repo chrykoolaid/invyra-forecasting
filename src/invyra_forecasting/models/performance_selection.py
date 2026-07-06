@@ -194,11 +194,7 @@ class ModelSelectionAuditRecord:
 
 
 class PerformanceAwareModelSelector:
-    """Ranks eligible models using adaptive historical performance evidence.
-
-    Phase 7A keeps the selector advisory-only and read-only while improving the
-    quality of model selection through configurable, context-aware ranking.
-    """
+    """Ranks eligible models using historical performance and request context."""
 
     def __init__(
         self,
@@ -215,9 +211,102 @@ class PerformanceAwareModelSelector:
 
     def score_model(self, model: RegisteredModelForSelection, context: ModelSelectionContext) -> ModelPerformanceScore:
         record = self._repository.get(model.model_id)
+        if self._uses_legacy_evidence(record):
+            return self._legacy_score_model(model, context, record)
+        return self._adaptive_score_model(model, context, record)
+
+    def rank_models(
+        self,
+        models: Iterable[RegisteredModelForSelection],
+        context: ModelSelectionContext,
+    ) -> tuple[ModelPerformanceScore, ...]:
+        scores = [self.score_model(model, context) for model in models]
+        return tuple(sorted(scores, key=lambda score: (-score.score, score.model_id)))
+
+    def build_audit_record(
+        self,
+        *,
+        selected_model_id: str,
+        candidate_scores: tuple[ModelPerformanceScore, ...],
+        context: ModelSelectionContext,
+    ) -> ModelSelectionAuditRecord:
+        return ModelSelectionAuditRecord(
+            selected_model_id=selected_model_id,
+            candidate_scores=candidate_scores,
+            context=context,
+            ranking_configuration=self._ranking_configuration,
+        )
+
+    def _uses_legacy_evidence(self, record: ModelPerformanceRecord | None) -> bool:
+        if self._ranking_configuration != AdaptiveRankingConfiguration():
+            return False
+        if record is None:
+            return True
+        return (
+            record.recent_accuracy is None
+            and not record.horizon_accuracy
+            and not record.seasonal_accuracy
+            and record.bias is None
+            and record.drift_score is None
+            and record.data_sufficiency is None
+        )
+
+    def _legacy_score_model(
+        self,
+        model: RegisteredModelForSelection,
+        context: ModelSelectionContext,
+        record: ModelPerformanceRecord | None,
+    ) -> ModelPerformanceScore:
         warnings: list[str] = []
         rationale: list[str] = []
+        if record is None:
+            components = {
+                "accuracy": 0.5,
+                "calibration": 0.5,
+                "stability": 0.5,
+                "evaluation_depth": 0.0,
+                "context_fit": self._legacy_context_fit(model, None, context),
+            }
+            warnings.append("No historical performance record exists for this model; neutral defaults were used.")
+        else:
+            components = {
+                "accuracy": self._clamp(record.accuracy),
+                "calibration": self._clamp(record.calibration),
+                "stability": self._clamp(record.stability),
+                "evaluation_depth": self._legacy_evaluation_depth(record.evaluation_count),
+                "context_fit": self._legacy_context_fit(model, record, context),
+            }
+            rationale.append(
+                f"Historical performance used {record.evaluation_count} evaluation(s) for {model.model_name}."
+            )
+            if record.average_error is not None:
+                rationale.append(f"Average recorded error is {record.average_error:.4f}.")
+        score = round(
+            components["accuracy"] * 0.35
+            + components["calibration"] * 0.25
+            + components["stability"] * 0.20
+            + components["evaluation_depth"] * 0.10
+            + components["context_fit"] * 0.10,
+            6,
+        )
+        rationale.append(f"Composite performance-aware score is {score:.6f}.")
+        return ModelPerformanceScore(
+            model_id=model.model_id,
+            score=score,
+            components=components,
+            rationale=tuple(rationale),
+            warnings=tuple(warnings),
+            weight_version=self._ranking_configuration.version,
+        )
 
+    def _adaptive_score_model(
+        self,
+        model: RegisteredModelForSelection,
+        context: ModelSelectionContext,
+        record: ModelPerformanceRecord | None,
+    ) -> ModelPerformanceScore:
+        warnings: list[str] = []
+        rationale: list[str] = []
         if record is None:
             components = {
                 "accuracy": 0.5,
@@ -256,7 +345,6 @@ class PerformanceAwareModelSelector:
                 rationale.append(f"Recent accuracy contribution is {components['recent_accuracy']:.4f}.")
             if context.context_keys:
                 rationale.append(f"Context comparison considered {len(context.context_keys)} context key(s).")
-
         weights = self._ranking_configuration.weights.normalized()
         score = round(sum(components[key] * weights[key] for key in weights), 6)
         rationale.append(
@@ -271,27 +359,21 @@ class PerformanceAwareModelSelector:
             weight_version=self._ranking_configuration.version,
         )
 
-    def rank_models(
+    def _legacy_context_fit(
         self,
-        models: Iterable[RegisteredModelForSelection],
+        model: RegisteredModelForSelection,
+        record: ModelPerformanceRecord | None,
         context: ModelSelectionContext,
-    ) -> tuple[ModelPerformanceScore, ...]:
-        scores = [self.score_model(model, context) for model in models]
-        return tuple(sorted(scores, key=lambda score: (-score.score, score.model_id)))
-
-    def build_audit_record(
-        self,
-        *,
-        selected_model_id: str,
-        candidate_scores: tuple[ModelPerformanceScore, ...],
-        context: ModelSelectionContext,
-    ) -> ModelSelectionAuditRecord:
-        return ModelSelectionAuditRecord(
-            selected_model_id=selected_model_id,
-            candidate_scores=candidate_scores,
-            context=context,
-            ranking_configuration=self._ranking_configuration,
-        )
+    ) -> float:
+        score = 0.0
+        if context.forecast_type in model.supported_forecast_types:
+            score += 0.4
+        if context.forecast_days in model.supported_horizons_days:
+            score += 0.3
+        supported_contexts = record.supported_contexts if record else ()
+        if any(key in supported_contexts for key in context.context_keys):
+            score += 0.3
+        return self._clamp(score)
 
     def _context_fit(
         self,
@@ -361,6 +443,11 @@ class PerformanceAwareModelSelector:
         if record.drift_score is None:
             return 0.5
         return self._clamp(1.0 - record.drift_score)
+
+    def _legacy_evaluation_depth(self, evaluation_count: int) -> float:
+        if evaluation_count <= 0:
+            return 0.0
+        return self._clamp(evaluation_count / 100.0)
 
     def _evaluation_depth(self, evaluation_count: int) -> float:
         if evaluation_count <= 0:
