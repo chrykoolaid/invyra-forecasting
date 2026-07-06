@@ -55,8 +55,6 @@ class DecisionReviewQueueBuilder:
     def _status_for_packet(self, packet: ForecastDecisionReviewPacket) -> DecisionReviewQueueStatus:
         if packet.decision_ready:
             return DecisionReviewQueueStatus.READY_FOR_OPERATOR_REVIEW
-        if packet.packet_has_missing_evidence if hasattr(packet, "packet_has_missing_evidence") else False:
-            return DecisionReviewQueueStatus.NEEDS_MORE_EVIDENCE
         if any("evidence reference" in warning for warning in packet.decision_gate.warnings):
             return DecisionReviewQueueStatus.NEEDS_MORE_EVIDENCE
         return DecisionReviewQueueStatus.PENDING_REVIEW
