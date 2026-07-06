@@ -201,7 +201,7 @@ class ForecastModelOrchestrator:
                 f"Selected {selected.model_name} version {selected.model_version} because it ranked highest for {forecast_type} over {forecast_days} days.",
                 f"Winning adaptive ranking score was {selected_score.score:.6f}.",
                 f"Ranking configuration version was {selected_score.weight_version}.",
-                "Selection remained advisory-only and read-only.",
+                "Selection remained advisory-only and read-only; it did not mutate inventory, movements, purchase orders, or ledger truth.",
             ),
             warnings=warnings,
             candidate_scores=candidate_scores,
