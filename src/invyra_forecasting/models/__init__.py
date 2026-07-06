@@ -1,5 +1,11 @@
 from invyra_forecasting.models.baseline import BaselineExplainableDemandModel
 from invyra_forecasting.models.contracts import ForecastModelInput, ForecastModelOutput
+from invyra_forecasting.models.ensemble import (
+    EnsembleForecastAuditRecord,
+    EnsembleForecastResult,
+    EnsembleMemberForecast,
+    WeightedAverageEnsembleForecaster,
+)
 from invyra_forecasting.models.handoff import ForecastModelHandoffAdapter
 from invyra_forecasting.models.orchestration import (
     ForecastModelOrchestrator,
@@ -34,6 +40,9 @@ __all__ = [
     "AdaptiveRankingConfiguration",
     "AdaptiveRankingWeights",
     "BaselineExplainableDemandModel",
+    "EnsembleForecastAuditRecord",
+    "EnsembleForecastResult",
+    "EnsembleMemberForecast",
     "ForecastModelHandoffAdapter",
     "ForecastModelInput",
     "ForecastModelOrchestrator",
@@ -56,5 +65,6 @@ __all__ = [
     "PerformanceAwareModelSelector",
     "RegisteredForecastModel",
     "SimpleDemandForecaster",
+    "WeightedAverageEnsembleForecaster",
     "build_default_model_registry",
 ]
