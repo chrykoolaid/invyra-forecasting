@@ -1,6 +1,9 @@
 from invyra_forecasting.models.baseline import BaselineExplainableDemandModel
 from invyra_forecasting.models.contracts import ForecastModelInput, ForecastModelOutput
 from invyra_forecasting.models.ensemble import (
+    EnsembleConsensusAssessment,
+    EnsembleConsensusConfiguration,
+    EnsembleConsensusPolicy,
     EnsembleForecastAuditRecord,
     EnsembleForecastResult,
     EnsembleMemberForecast,
@@ -40,6 +43,9 @@ __all__ = [
     "AdaptiveRankingConfiguration",
     "AdaptiveRankingWeights",
     "BaselineExplainableDemandModel",
+    "EnsembleConsensusAssessment",
+    "EnsembleConsensusConfiguration",
+    "EnsembleConsensusPolicy",
     "EnsembleForecastAuditRecord",
     "EnsembleForecastResult",
     "EnsembleMemberForecast",
