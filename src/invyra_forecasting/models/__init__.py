@@ -11,6 +11,8 @@ from invyra_forecasting.models.orchestration import (
     build_default_model_registry,
 )
 from invyra_forecasting.models.performance_selection import (
+    AdaptiveRankingConfiguration,
+    AdaptiveRankingWeights,
     ModelPerformanceRecord,
     ModelPerformanceRepository,
     ModelPerformanceScore,
@@ -29,6 +31,8 @@ from invyra_forecasting.models.service import ForecastModelService
 from invyra_forecasting.models.simple import SimpleDemandForecaster
 
 __all__ = [
+    "AdaptiveRankingConfiguration",
+    "AdaptiveRankingWeights",
     "BaselineExplainableDemandModel",
     "ForecastModelHandoffAdapter",
     "ForecastModelInput",

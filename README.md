@@ -30,6 +30,7 @@ Forecasting must assist decisions without cluttering staff workflows or replacin
 - Audit event
 - Forecast accuracy evaluation
 - Accuracy-informed confidence recalibration
+- Adaptive model ranking evidence
 
 ## Governance
 
@@ -51,6 +52,7 @@ The forecasting engine now supports a registry-backed intelligence path while pr
 Current locked guarantees:
 
 - Forecasting remains advisory-only.
+- Forecasting remains read-only.
 - Inventory ledger remains the source of truth.
 - The engine does not mutate stock.
 - The engine does not create stock movements.
@@ -348,3 +350,32 @@ Phase 3V adds a test-only contract confirming README Phase 3T and Phase 3U marke
 Phase 3W documents Phase 3V completion and keeps the README aligned with the latest documentation-marker contract.
 
 This is a documentation-only phase. It does not change runtime behavior, forecast calculations, recommendations, inventory, stock movements, or purchase-order behavior.
+
+## Phase 7A Adaptive Model Ranking
+
+Phase 7A upgrades model selection from fixed performance weighting to adaptive, context-aware model ranking.
+
+The selector now ranks eligible models using configurable evidence factors:
+
+- historical accuracy
+- recent accuracy and evaluation recency
+- calibration
+- stability
+- bias control
+- evaluation depth
+- item/category/location/context fit
+- forecast horizon fit
+- seasonal fit
+- data sufficiency
+- drift resilience
+
+Adaptive ranking remains advisory-only and read-only. It never mutates inventory, creates stock movements, creates or approves purchase orders, or overrides ledger truth.
+
+Ranking decisions include:
+
+- candidate model scores
+- score components
+- rationale and warnings
+- ranking configuration version
+- audit-safe selection record
+- read-only/source-of-truth guardrail flags
