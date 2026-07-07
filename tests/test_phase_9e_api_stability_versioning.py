@@ -108,9 +108,12 @@ def test_dashboard_response_retains_required_backward_compatible_fields() -> Non
     }
     assert set(dashboard["summary"]) >= {
         "total_count",
-        "status_counts",
-        "priority_counts",
-        "generated_at",
+        "ready_count",
+        "pending_count",
+        "needs_more_evidence_count",
+        "high_priority_count",
+        "medium_priority_count",
+        "normal_priority_count",
         *REQUIRED_GOVERNANCE_FLAGS,
     }
     assert set(dashboard["snapshot"]) >= {
