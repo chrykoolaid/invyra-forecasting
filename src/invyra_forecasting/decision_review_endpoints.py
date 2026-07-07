@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, FastAPI
+from fastapi import APIRouter, FastAPI, HTTPException
 
 from invyra_forecasting.decision_review_api import DecisionReviewApiResponseBuilder
 from invyra_forecasting.decision_review_dashboard import DecisionReviewDashboardProjectionBuilder
@@ -53,7 +53,10 @@ def create_decision_review_router(
 
     @router.get("/export")
     def get_decision_review_export(export_format: str = "json") -> dict[str, object]:
-        return service.export_payload(export_format=export_format)
+        try:
+            return service.export_payload(export_format=export_format)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     return router
 
