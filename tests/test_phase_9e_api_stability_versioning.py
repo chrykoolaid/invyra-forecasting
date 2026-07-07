@@ -141,9 +141,15 @@ def test_export_response_retains_required_backward_compatible_fields() -> None:
     }
     assert set(payload["manifest"]) >= {
         "manifest_version",
-        "export_version",
-        "export_format",
+        "export",
         "record_count",
+        "generated_at",
+        *REQUIRED_GOVERNANCE_FLAGS,
+    }
+    assert set(payload["manifest"]["export"]) >= {
+        "export_format",
+        "export_version",
+        "response",
         "generated_at",
         *REQUIRED_GOVERNANCE_FLAGS,
     }
