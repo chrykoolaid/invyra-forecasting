@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import pytest
 from fastapi.testclient import TestClient
 
 from invyra_forecasting.constants import Environment
@@ -89,4 +88,5 @@ def test_decision_review_export_endpoint_supports_dict_projection_format() -> No
 def test_decision_review_export_endpoint_rejects_unsupported_format_without_mutation() -> None:
     response = _client(_store_with_item()).get("/forecast/decision-review/export", params={"export_format": "csv"})
 
-    assert response.status_code == 500
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Unsupported decision review export format"
