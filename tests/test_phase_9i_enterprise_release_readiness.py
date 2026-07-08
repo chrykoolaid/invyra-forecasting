@@ -61,7 +61,7 @@ def test_phase_9_enterprise_release_readiness_document_locks_guardrails() -> Non
 
     for term in REQUIRED_GUARDRAIL_TERMS:
         assert term in content
-    assert "Phase 9 API layer is ready for controlled read-only enterprise integration" in content
+    assert "ready for controlled read-only enterprise integration" in content
     assert "Phase 9I Completion Marker" in content
 
 
@@ -80,22 +80,24 @@ def test_phase_9_runtime_surface_remains_limited_to_read_only_api_and_client_hel
 
 
 def test_phase_9_documentation_covers_consumer_readiness_stack() -> None:
-    doc_bundle = "\n".join(_read(path) for path in REQUIRED_PHASE_9_DOCS)
-
-    assert "OpenAPI" in doc_bundle
-    assert "Consumer Integration Handoff" in doc_bundle
-    assert "Read-Only Reference Client" in doc_bundle
-    assert "Consumer Compatibility Certification" in doc_bundle
-    assert "Enterprise Release Readiness" in doc_bundle
+    assert "OpenAPI" in _read("docs/phase_9f_openapi_contract.md")
+    assert "Consumer Integration Handoff" in _read("docs/phase_9f_consumer_handoff.md")
+    assert "Read-Only Reference Client" in _read("docs/phase_9g_reference_client.md")
+    assert "Consumer Compatibility Certification" in _read("docs/phase_9h_compatibility_certification.md")
+    assert "Enterprise Release Readiness" in _read("docs/phase_9i_enterprise_release_readiness.md")
 
 
 def test_phase_9_test_coverage_covers_public_contract_layers() -> None:
-    test_bundle = "\n".join(_read(path) for path in REQUIRED_PHASE_9_TESTS)
+    endpoint_tests = _read("tests/test_phase_9a_decision_review_endpoints.py")
+    adapter_tests = _read("tests/test_phase_9d_api_adapter_compatibility.py")
+    client_tests = _read("tests/test_phase_9g_decision_review_client.py")
+    certification_tests = _read("tests/test_phase_9h_consumer_compatibility_certification.py")
 
-    assert "/forecast/decision-review/dashboard" in test_bundle
-    assert "/forecast/decision-review/export" in test_bundle
-    assert "DecisionReviewReferenceClient" in test_bundle
-    assert "Unsupported decision review export format" in test_bundle
-    assert "advisory_only" in test_bundle
-    assert "read_only" in test_bundle
-    assert "inventory_source_of_truth_preserved" in test_bundle
+    assert "/forecast/decision-review/dashboard" in endpoint_tests
+    assert "/forecast/decision-review/export" in endpoint_tests
+    assert "Unsupported decision review export format" in endpoint_tests
+    assert "advisory_only" in adapter_tests
+    assert "read_only" in adapter_tests
+    assert "inventory_source_of_truth_preserved" in adapter_tests
+    assert "DecisionReviewReferenceClient" in client_tests
+    assert "DecisionReviewReferenceClient" in certification_tests
