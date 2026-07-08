@@ -106,7 +106,7 @@ def test_reference_client_loads_dashboard_and_export_without_mutation() -> None:
             ),
             "/forecast/decision-review/export": _Response(
                 status_code=200,
-                payload=api.get("/forecast/decision-review/export").json(),
+                payload=api.get("/forecast/decision-review/export", params={"export_format": "dict"}).json(),
             ),
         }
     )
@@ -116,6 +116,7 @@ def test_reference_client_loads_dashboard_and_export_without_mutation() -> None:
     export = client.get_export_bundle(export_format="dict")
 
     assert dashboard.total_count == 1
+    assert export.export_format == "dict"
     assert export.ready_for_delivery is True
     assert http_client.requests == [
         ("/forecast/decision-review/dashboard", {}),
