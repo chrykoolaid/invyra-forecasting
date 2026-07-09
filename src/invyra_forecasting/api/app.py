@@ -138,11 +138,11 @@ def _comparison_candidate(snapshot: dict) -> dict:
     forecast = snapshot["forecast"]
     confidence = snapshot["confidence"]
     return {
-        "model_id": forecast.get("model_name", "baseline"),
-        "model_name": forecast.get("model_name", "baseline"),
+        "model_id": forecast.get("model_name", forecast.get("method", "baseline")),
+        "model_name": forecast.get("model_name", forecast.get("method", "baseline")),
         "model_version": forecast.get("model_version", "unknown"),
         "forecast_quantity": forecast["forecast_quantity"],
-        "confidence_score": confidence["confidence_score"],
+        "confidence_score": confidence["score"],
         "rank": 1,
         "selected": True,
         "explanation": snapshot["explanation"],
