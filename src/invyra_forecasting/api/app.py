@@ -250,6 +250,46 @@ def reorder_recommendation(payload: ForecastRequest) -> dict:
     return {"recommendation": to_primitive(snapshot.recommendation), "risk": to_primitive(snapshot.risk), "confidence": to_primitive(snapshot.confidence), "explanation": to_primitive(snapshot.explanation)}
 
 
+@app.post("/audit/override")
+def audit_override(payload: OverrideAuditRequest) -> dict:
+    event = create_override_audit_event(
+        actor=payload.actor,
+        environment=payload.environment,
+        item_id=payload.item_id,
+        location_id=payload.location_id,
+        original_recommendation=payload.original_recommendation,
+        override_action=payload.override_action,
+        reason=payload.reason,
+    )
+    JsonlAuditStore(ForecastingConfig.from_env().audit_log_path).append(event)
+    return {"audit_event": to_primitive(event)}
+
+
+@app.post("/evaluations/accuracy")
+def evaluate_accuracy(payload: AccuracyEvaluationRequest) -> dict:
+    try:
+        result = AccuracyService(ForecastingConfig.from_env()).evaluate(
+            item_id=payload.item_id,
+            location_id=payload.location_id,
+            environment=payload.environment,
+            forecast_quantity=payload.forecast_quantity,
+            actuals=payload.to_actuals(),
+            forecast_horizon_days=payload.forecast_horizon_days,
+            forecast_snapshot_id=payload.forecast_snapshot_id,
+            persist=payload.persist,
+            details={"actor": payload.actor, "notes": payload.notes},
+        )
+    except AccuracyValidationError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return {"accuracy": to_primitive(result)}
+
+
+@app.get("/evaluations/accuracy/item/{item_id}")
+def get_item_accuracy(item_id: str, location_id: str | None = None, environment: str | None = None, limit: int = 100) -> dict:
+    results = AccuracyService(ForecastingConfig.from_env()).list_item_accuracy(item_id=item_id, location_id=location_id, environment=environment, limit=limit)
+    return {"count": len(results), "results": results}
+
+
 @app.post("/advisory/forecast")
 def advisory_forecast(payload: AdvisoryForecastApiRequest) -> dict:
     registry = InMemoryForecastSignalRegistry()
