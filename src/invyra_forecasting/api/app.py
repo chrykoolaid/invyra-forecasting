@@ -109,6 +109,7 @@ def _stable_v1_resources() -> tuple[str, ...]:
         "/v1/forecasts/item",
         "/v1/snapshots/{snapshot_id}",
         "/v1/evaluations/accuracy/item/{item_id}",
+        "/v1/models",
         "/v1/models/registry",
         "/v1/models/capabilities",
         "/v1/monitoring/summary",
@@ -116,6 +117,31 @@ def _stable_v1_resources() -> tuple[str, ...]:
         "/v1/hardening/summary",
         "/v1/readiness/summary",
     )
+
+
+def _enterprise_guardrails() -> dict[str, bool]:
+    return {
+        "advisory_only": True,
+        "read_only": True,
+        "inventory_source_of_truth_preserved": True,
+        "no_inventory_mutation": True,
+        "no_stock_movement_creation": True,
+        "no_purchase_order_creation": True,
+        "no_purchase_order_approval": True,
+    }
+
+
+@app.get("/")
+def root() -> dict:
+    return {
+        "engine": "invyra-forecasting",
+        "engine_version": __version__,
+        "api_version": "v1",
+        "service": "Invyra Forecasting Engine",
+        "mode": "advisory",
+        "stable_resources": list(_stable_v1_resources()),
+        **_enterprise_guardrails(),
+    }
 
 
 @app.get("/health")
@@ -155,6 +181,12 @@ def production_get_item_accuracy(item_id: str, location_id: str | None = None, e
     results = AccuracyService(ForecastingConfig.from_env()).list_item_accuracy(item_id=item_id, location_id=location_id, environment=environment, limit=limit + offset)
     items = _slice(results, limit=limit, offset=offset)
     return paginated_envelope("accuracy_evaluations", items, limit=limit, offset=offset, total=len(results), item_id=item_id, location_id=location_id, environment=environment)
+
+
+@app.get("/v1/models")
+def production_models(limit: int = 100, offset: int = 0) -> dict:
+    items = [entry.to_dict() for entry in _default_registry_v2().all()]
+    return paginated_envelope("models", _slice(items, limit=limit, offset=offset), limit=limit, offset=offset, total=len(items))
 
 
 @app.get("/v1/models/registry")
@@ -218,6 +250,46 @@ def reorder_recommendation(payload: ForecastRequest) -> dict:
     return {"recommendation": to_primitive(snapshot.recommendation), "risk": to_primitive(snapshot.risk), "confidence": to_primitive(snapshot.confidence), "explanation": to_primitive(snapshot.explanation)}
 
 
+@app.post("/audit/override")
+def audit_override(payload: OverrideAuditRequest) -> dict:
+    event = create_override_audit_event(
+        actor=payload.actor,
+        environment=payload.environment,
+        item_id=payload.item_id,
+        location_id=payload.location_id,
+        original_recommendation=payload.original_recommendation,
+        override_action=payload.override_action,
+        reason=payload.reason,
+    )
+    JsonlAuditStore(ForecastingConfig.from_env().audit_log_path).append(event)
+    return {"audit_event": to_primitive(event)}
+
+
+@app.post("/evaluations/accuracy")
+def evaluate_accuracy(payload: AccuracyEvaluationRequest) -> dict:
+    try:
+        result = AccuracyService(ForecastingConfig.from_env()).evaluate(
+            item_id=payload.item_id,
+            location_id=payload.location_id,
+            environment=payload.environment,
+            forecast_quantity=payload.forecast_quantity,
+            actuals=payload.to_actuals(),
+            forecast_horizon_days=payload.forecast_horizon_days,
+            forecast_snapshot_id=payload.forecast_snapshot_id,
+            persist=payload.persist,
+            details={"actor": payload.actor, "notes": payload.notes},
+        )
+    except AccuracyValidationError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return {"accuracy": to_primitive(result)}
+
+
+@app.get("/evaluations/accuracy/item/{item_id}")
+def get_item_accuracy(item_id: str, location_id: str | None = None, environment: str | None = None, limit: int = 100) -> dict:
+    results = AccuracyService(ForecastingConfig.from_env()).list_item_accuracy(item_id=item_id, location_id=location_id, environment=environment, limit=limit)
+    return {"count": len(results), "results": results}
+
+
 @app.post("/advisory/forecast")
 def advisory_forecast(payload: AdvisoryForecastApiRequest) -> dict:
     registry = InMemoryForecastSignalRegistry()
@@ -257,41 +329,3 @@ def get_snapshot(snapshot_id: str) -> dict:
     if snapshot is None:
         raise HTTPException(status_code=404, detail=f"Snapshot not found: {snapshot_id}")
     return snapshot
-
-
-@app.get("/audit/events")
-def audit_events(limit: int = 100, event_type: str | None = None, item_id: str | None = None, location_id: str | None = None, environment: str | None = None) -> dict:
-    events = JsonlAuditStore(ForecastingConfig.from_env().audit_log_path).list_events(limit=limit, event_type=event_type, item_id=item_id, location_id=location_id, environment=environment)
-    return {"count": len(events), "events": events}
-
-
-@app.post("/audit/override")
-def audit_override(payload: OverrideAuditRequest) -> dict:
-    event = create_override_audit_event(payload.actor, payload.environment, payload.item_id, payload.location_id, payload.original_recommendation, payload.override_action, payload.reason)
-    JsonlAuditStore(ForecastingConfig.from_env().audit_log_path).append(event)
-    return {"audit_event": to_primitive(event)}
-
-
-@app.post("/accuracy/evaluate")
-def evaluate_accuracy(payload: AccuracyEvaluationRequest) -> dict:
-    try:
-        result = AccuracyService(ForecastingConfig.from_env()).evaluate(
-            item_id=payload.item_id,
-            location_id=payload.location_id,
-            environment=payload.environment,
-            forecast_quantity=payload.forecast_quantity,
-            actuals=payload.to_actuals(),
-            forecast_horizon_days=payload.forecast_horizon_days,
-            forecast_snapshot_id=payload.forecast_snapshot_id,
-            persist=payload.persist,
-            details={"actor": payload.actor, "notes": payload.notes},
-        )
-    except AccuracyValidationError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-    return {"accuracy": to_primitive(result)}
-
-
-@app.get("/accuracy/item/{item_id}")
-def get_item_accuracy(item_id: str, location_id: str | None = None, environment: str | None = None, limit: int = 100) -> dict:
-    results = AccuracyService(ForecastingConfig.from_env()).list_item_accuracy(item_id=item_id, location_id=location_id, environment=environment, limit=limit)
-    return {"count": len(results), "results": results}
