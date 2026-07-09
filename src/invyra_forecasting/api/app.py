@@ -108,7 +108,6 @@ def _stable_v1_resources() -> tuple[str, ...]:
     return (
         "/v1/forecast",
         "/v1/forecast/batch",
-        "/v1/forecast/compare",
         "/v1/forecasts/item",
         "/v1/snapshots/{snapshot_id}",
         "/v1/evaluations/accuracy/item/{item_id}",
@@ -131,22 +130,6 @@ def _enterprise_guardrails() -> dict[str, bool]:
         "no_stock_movement_creation": True,
         "no_purchase_order_creation": True,
         "no_purchase_order_approval": True,
-    }
-
-
-def _comparison_candidate(snapshot: dict) -> dict:
-    forecast = snapshot["forecast"]
-    confidence = snapshot["confidence"]
-    return {
-        "model_id": forecast.get("model_name", forecast.get("method", "baseline")),
-        "model_name": forecast.get("model_name", forecast.get("method", "baseline")),
-        "model_version": forecast.get("model_version", "unknown"),
-        "forecast_quantity": forecast["forecast_quantity"],
-        "confidence_score": confidence["score"],
-        "rank": 1,
-        "selected": True,
-        "explanation": snapshot["explanation"],
-        "evidence_refs": tuple(snapshot.get("audit_event", {}).get("details", {}).get("evidence_refs", ())),
     }
 
 
@@ -195,23 +178,6 @@ def production_forecast_batch(payload: BatchForecastRequest) -> dict:
         request.write_snapshot = payload.write_snapshots
         snapshots.append(_run_snapshot(request))
     return production_envelope("forecast_batch", {"count": len(snapshots), "snapshots": to_primitive(snapshots)}, write_snapshots=payload.write_snapshots)
-
-
-@app.post("/v1/forecast/compare")
-def production_forecast_compare(payload: ForecastRequest) -> dict:
-    snapshot = to_primitive(_run_snapshot(payload))
-    candidate = _comparison_candidate(snapshot)
-    return production_envelope(
-        "forecast_comparison",
-        {
-            "recommended_model": candidate["model_id"],
-            "comparison_strategy": "single_candidate_baseline_compare",
-            "candidates": [candidate],
-            "forecast_snapshot": snapshot,
-            **_enterprise_guardrails(),
-        },
-        write_snapshot=payload.write_snapshot,
-    )
 
 
 @app.post("/v1/forecasts/item")
