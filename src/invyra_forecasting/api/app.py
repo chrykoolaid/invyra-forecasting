@@ -106,6 +106,8 @@ def _slice(items: list[dict], *, limit: int, offset: int) -> list[dict]:
 
 def _stable_v1_resources() -> tuple[str, ...]:
     return (
+        "/v1/forecast",
+        "/v1/forecast/batch",
         "/v1/forecasts/item",
         "/v1/snapshots/{snapshot_id}",
         "/v1/evaluations/accuracy/item/{item_id}",
@@ -162,10 +164,25 @@ def production_api_metadata() -> dict:
     )
 
 
-@app.post("/v1/forecasts/item")
-def production_forecast_item(payload: ForecastRequest) -> dict:
+@app.post("/v1/forecast")
+def production_forecast(payload: ForecastRequest) -> dict:
     snapshot = _run_snapshot(payload)
     return production_envelope("forecast_snapshot", to_primitive(snapshot), write_snapshot=payload.write_snapshot)
+
+
+@app.post("/v1/forecast/batch")
+def production_forecast_batch(payload: BatchForecastRequest) -> dict:
+    snapshots = []
+    for request in payload.requests:
+        request.actor = payload.actor
+        request.write_snapshot = payload.write_snapshots
+        snapshots.append(_run_snapshot(request))
+    return production_envelope("forecast_batch", {"count": len(snapshots), "snapshots": to_primitive(snapshots)}, write_snapshots=payload.write_snapshots)
+
+
+@app.post("/v1/forecasts/item")
+def production_forecast_item(payload: ForecastRequest) -> dict:
+    return production_forecast(payload)
 
 
 @app.get("/v1/snapshots/{snapshot_id}")
