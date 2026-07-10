@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import UTC, datetime
+
 try:
     from fastapi import FastAPI, HTTPException
     from fastapi.middleware.cors import CORSMiddleware
@@ -115,6 +117,8 @@ def _stable_v1_resources() -> tuple[str, ...]:
         "/v1/models",
         "/v1/models/registry",
         "/v1/models/capabilities",
+        "/v1/metrics",
+        "/v1/observability/ping",
         "/v1/monitoring/summary",
         "/v1/performance/summary",
         "/v1/hardening/summary",
@@ -251,6 +255,30 @@ def production_model_registry(limit: int = 100, offset: int = 0) -> dict:
 def production_model_capabilities(forecast_type: str = "item_location_demand", forecast_days: int = 30, limit: int = 100, offset: int = 0) -> dict:
     items = [entry.to_dict() for entry in _default_registry_v2().compatible(forecast_type=forecast_type, forecast_days=forecast_days)]
     return paginated_envelope("model_capabilities", _slice(items, limit=limit, offset=offset), limit=limit, offset=offset, total=len(items), forecast_type=forecast_type, forecast_days=forecast_days)
+
+
+@app.get("/v1/metrics")
+def production_metrics() -> dict:
+    return production_envelope(
+        "operational_metrics",
+        {
+            "monitoring": ForecastMonitoringService().snapshot().to_dict(),
+            "performance": PerformanceBenchmarkService().summarize().to_dict(),
+        },
+    )
+
+
+@app.get("/v1/observability/ping")
+def production_observability_ping() -> dict:
+    return production_envelope(
+        "observability_ping",
+        {
+            "status": "ok",
+            "engine": "invyra-forecasting",
+            "engine_version": __version__,
+            "timestamp_utc": datetime.now(UTC).isoformat(timespec="seconds").replace("+00:00", "Z"),
+        },
+    )
 
 
 @app.get("/v1/monitoring/summary")
