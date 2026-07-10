@@ -70,5 +70,5 @@ def test_v1_forecast_compare_returns_read_only_advisory_comparison() -> None:
     assert data["candidates"][0]["rank"] == 1
     assert data["candidates"][0]["selected"] is True
     assert data["candidates"][0]["forecast_quantity"] > 0
-    assert 0 <= data["candidates"][0]["confidence_score"] <= 1
+    assert 0 <= data["candidates"][0]["confidence_score"] <= 100
     assert data["forecast_snapshot"]["audit_event"]["details"]["advisory_only"] is True

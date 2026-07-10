@@ -137,16 +137,17 @@ def _enterprise_guardrails() -> dict[str, bool]:
 def _comparison_candidate(snapshot: dict) -> dict:
     forecast = snapshot["forecast"]
     confidence = snapshot["confidence"]
+    confidence_score = confidence.get("score", confidence.get("confidence_score", 0.0))
     return {
         "model_id": forecast.get("model_name", forecast.get("method", "baseline")),
         "model_name": forecast.get("model_name", forecast.get("method", "baseline")),
         "model_version": forecast.get("model_version", "unknown"),
         "forecast_quantity": forecast["forecast_quantity"],
-        "confidence_score": confidence["score"],
+        "confidence_score": confidence_score,
         "rank": 1,
         "selected": True,
         "explanation": snapshot["explanation"],
-        "evidence_refs": tuple(snapshot.get("audit_event", {}).get("details", {}).get("evidence_refs", ())),
+        "evidence_refs": list(snapshot.get("audit_event", {}).get("details", {}).get("evidence_refs", ())),
     }
 
 
