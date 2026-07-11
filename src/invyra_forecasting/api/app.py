@@ -17,6 +17,7 @@ from invyra_forecasting.api.inventory_contracts import ItemDetailsForecastPanelR
 from invyra_forecasting.api.production_contracts import paginated_envelope, production_envelope
 from invyra_forecasting.api.runtime import ALLOWED_HEADERS, ALLOWED_METHODS, allowed_origins_from_env
 from invyra_forecasting.api.serializers import to_primitive
+from invyra_forecasting.api.tenant_context import TenantContextMiddleware
 from invyra_forecasting.audit import JsonlAuditStore, create_override_audit_event
 from invyra_forecasting.config import ForecastingConfig
 from invyra_forecasting.data.repositories import FileSnapshotRepository
@@ -33,6 +34,7 @@ from invyra_forecasting.signals import ForecastSignalValidationError, InMemoryFo
 
 app = FastAPI(title="Invyra Forecasting Engine", version=__version__, description="Optional internal API wrapper for the Python-first forecasting engine.")
 
+app.add_middleware(TenantContextMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins_from_env(),
