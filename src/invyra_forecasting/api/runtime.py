@@ -12,7 +12,7 @@ DEFAULT_ALLOWED_ORIGINS = [
 ]
 
 ALLOWED_METHODS = ["GET", "POST", "OPTIONS"]
-ALLOWED_HEADERS = ["Content-Type"]
+ALLOWED_HEADERS = ["Content-Type", "X-Tenant-Id"]
 
 
 def parse_allowed_origins(raw: str | None) -> list[str]:

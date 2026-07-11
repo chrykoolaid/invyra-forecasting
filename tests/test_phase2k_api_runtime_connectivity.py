@@ -38,4 +38,4 @@ def test_is_origin_allowed_uses_normalized_origin():
 
 def test_cors_methods_and_headers_are_limited():
     assert ALLOWED_METHODS == ["GET", "POST", "OPTIONS"]
-    assert ALLOWED_HEADERS == ["Content-Type"]
+    assert ALLOWED_HEADERS == ["Content-Type", "X-Tenant-Id"]

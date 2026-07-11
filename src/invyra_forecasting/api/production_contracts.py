@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
+from invyra_forecasting.api.tenant_context import current_tenant_id
 
 PRODUCTION_API_VERSION = "v1"
 PRODUCTION_CONTRACT_VERSION = "1.0.0"
@@ -54,6 +55,9 @@ class ProductionApiEnvelope:
 
 
 def production_envelope(resource: str, data: Any, **metadata: Any) -> dict[str, Any]:
+    tenant_id = current_tenant_id()
+    if tenant_id is not None:
+        metadata.setdefault("tenant_id", tenant_id)
     return ProductionApiEnvelope(api_version=PRODUCTION_API_VERSION, resource=resource, data=data, metadata=dict(metadata)).to_dict()
 
 
