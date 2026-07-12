@@ -4,6 +4,8 @@ from dataclasses import asdict, dataclass, field
 from enum import StrEnum
 from typing import Any, Iterable
 
+from invyra_forecasting.api.tenant_namespace import current_namespace
+
 
 class MonitoringHealthStatus(StrEnum):
     HEALTHY = "HEALTHY"
@@ -80,18 +82,22 @@ class ForecastMonitoringSnapshot:
 
 class InMemoryForecastMonitoringRepository:
     def __init__(self, events: Iterable[ForecastMonitoringEvent] = ()) -> None:
-        self._events: dict[str, ForecastMonitoringEvent] = {}
+        self._events_by_namespace: dict[str, dict[str, ForecastMonitoringEvent]] = {}
         for event in events:
             self.record(event)
 
+    def _events(self) -> dict[str, ForecastMonitoringEvent]:
+        return self._events_by_namespace.setdefault(current_namespace(), {})
+
     def record(self, event: ForecastMonitoringEvent) -> ForecastMonitoringEvent:
-        if event.event_id in self._events:
+        events = self._events()
+        if event.event_id in events:
             raise ValueError(f"monitoring event already recorded: {event.event_id}")
-        self._events[event.event_id] = event
+        events[event.event_id] = event
         return event
 
     def all(self) -> tuple[ForecastMonitoringEvent, ...]:
-        return tuple(self._events.values())
+        return tuple(self._events().values())
 
 
 class ForecastMonitoringService:
