@@ -19,8 +19,9 @@ EXPECTED_HISTORY_ROUTES = {
 def test_root_application_registers_all_history_routes_once():
     registered: dict[str, list[set[str]]] = {}
     for route in app.routes:
-        if route.path.startswith("/v1/history"):
-            registered.setdefault(route.path, []).append(set(route.methods or ()))
+        path = getattr(route, "path", None)
+        if path is not None and path.startswith("/v1/history"):
+            registered.setdefault(path, []).append(set(getattr(route, "methods", ()) or ()))
 
     assert set(registered) == EXPECTED_HISTORY_ROUTES
     for path in EXPECTED_HISTORY_ROUTES:
@@ -30,8 +31,9 @@ def test_root_application_registers_all_history_routes_once():
 
 def test_history_routes_expose_no_mutation_methods():
     for route in app.routes:
-        if route.path.startswith("/v1/history"):
-            assert set(route.methods or ()) <= {"GET", "HEAD"}
+        path = getattr(route, "path", None)
+        if path is not None and path.startswith("/v1/history"):
+            assert set(getattr(route, "methods", ()) or ()) <= {"GET", "HEAD"}
 
 
 def test_root_metadata_advertises_registered_history_resources():
