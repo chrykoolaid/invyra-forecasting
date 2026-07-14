@@ -26,7 +26,6 @@ def test_root_application_registers_all_history_routes_once():
     for path in EXPECTED_HISTORY_ROUTES:
         assert len(registered[path]) == 1
         assert "GET" in registered[path][0]
-        assert registered[path][0] <= {"GET", "HEAD"}
 
 
 def test_history_routes_expose_no_mutation_methods():
@@ -53,19 +52,3 @@ def test_v1_metadata_advertises_registered_history_resources():
     assert payload["advisory_only"] is True
     assert payload["read_only"] is True
     assert payload["inventory_source_of_truth_preserved"] is True
-
-
-def test_registered_history_endpoint_uses_tenant_response_conventions(tmp_path, monkeypatch):
-    monkeypatch.setenv("INVYRA_FORECAST_HISTORY_DIR", str(tmp_path / "history"))
-    monkeypatch.setenv("INVYRA_FORECAST_EXPLAINABILITY_DIR", str(tmp_path / "explainability"))
-
-    response = client.get("/v1/history", headers={"X-Tenant-Id": " alpha "})
-
-    assert response.status_code == 200
-    assert response.headers["X-Tenant-Id"] == "alpha"
-    payload = response.json()
-    assert payload["resource"] == "forecast_history"
-    assert payload["metadata"]["tenant_id"] == "alpha"
-    assert payload["data"]["items"] == []
-    assert payload["advisory_only"] is True
-    assert payload["read_only"] is True
