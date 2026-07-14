@@ -13,6 +13,7 @@ from invyra_forecasting.accuracy import AccuracyService, AccuracyValidationError
 from invyra_forecasting.api.accuracy_contracts import AccuracyEvaluationRequest
 from invyra_forecasting.api.advisory_contracts import AdvisoryForecastApiRequest
 from invyra_forecasting.api.contracts import BatchForecastRequest, ForecastRequest, OverrideAuditRequest
+from invyra_forecasting.api.history_routes import router as history_router
 from invyra_forecasting.api.inventory_contracts import ItemDetailsForecastPanelRequest
 from invyra_forecasting.api.production_contracts import paginated_envelope, production_envelope
 from invyra_forecasting.api.runtime import ALLOWED_HEADERS, ALLOWED_METHODS, allowed_origins_from_env
@@ -42,6 +43,7 @@ app.add_middleware(
     allow_methods=ALLOWED_METHODS,
     allow_headers=ALLOWED_HEADERS,
 )
+app.include_router(history_router)
 
 
 def _config_from_request(request: ForecastRequest) -> ForecastingConfig:
@@ -115,6 +117,10 @@ def _stable_v1_resources() -> tuple[str, ...]:
         "/v1/forecast/compare",
         "/v1/forecasts/item",
         "/v1/snapshots/{snapshot_id}",
+        "/v1/history",
+        "/v1/history/{history_id}",
+        "/v1/history/{history_id}/lineage",
+        "/v1/history/forecasts/{forecast_id}/versions",
         "/v1/evaluations/accuracy/item/{item_id}",
         "/v1/models",
         "/v1/models/registry",
