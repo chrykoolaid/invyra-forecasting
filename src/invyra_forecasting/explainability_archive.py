@@ -24,11 +24,11 @@ class HistoricalExplainabilityRecord:
     evidence_refs: tuple[str, ...]
     reasoning_summary: tuple[str, ...] = ()
     supporting_metrics: dict[str, Any] = field(default_factory=dict)
-    metadata: dict[str, Any] = field(default_factory=dict)
     archived_at_utc: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     advisory_only: bool = True
     read_only: bool = True
     inventory_source_of_truth_preserved: bool = True
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         for field_name, value in {
