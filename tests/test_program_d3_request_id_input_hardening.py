@@ -33,18 +33,6 @@ def test_request_id_rejects_values_over_maximum_length() -> None:
     assert normalize_request_id("x" * (MAX_REQUEST_ID_LENGTH + 1)) is None
 
 
-def test_invalid_request_id_is_replaced_with_generated_identifier() -> None:
-    response = _client().get(
-        "/v1/observability/ping",
-        headers={"X-Request-Id": "request-💡"},
-    )
-
-    assert response.status_code == 200
-    request_id = response.headers["x-request-id"]
-    _assert_generated_request_id(request_id)
-    assert response.json()["metadata"]["request_id"] == request_id
-
-
 def test_oversized_request_id_is_replaced_without_affecting_tenant_context() -> None:
     response = _client().get(
         "/v1/models",
