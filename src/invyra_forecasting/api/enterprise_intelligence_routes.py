@@ -11,6 +11,9 @@ except ImportError as exc:  # pragma: no cover
     ) from exc
 
 from invyra_forecasting.api.production_contracts import production_envelope
+from invyra_forecasting.certified_statistics_persistence import (
+    JsonlCertifiedStatisticsRepository,
+)
 from invyra_forecasting.enterprise_intelligence_summary import (
     EnterpriseForecastIntelligenceSummaryService,
     EnterpriseModelIntelligenceInput,
@@ -22,6 +25,22 @@ from invyra_forecasting.model_performance_statistics import ModelPerformanceStat
 router = APIRouter(tags=["enterprise-intelligence"])
 
 
+def _empty_statistics(entry) -> ModelPerformanceStatistics:
+    return ModelPerformanceStatistics(
+        registry_id=entry.registry_id,
+        model_name=entry.model_name,
+        model_version=entry.model_version,
+        forecast_horizon_days=None,
+        eligible_evaluation_count=0,
+        mae=None,
+        rmse=None,
+        mape=None,
+        bias=None,
+        average_accuracy_score=None,
+        average_calibration_gap=None,
+    )
+
+
 def _summary_inputs() -> tuple[EnterpriseModelIntelligenceInput, ...]:
     registry = JsonlModelPerformanceRegistry(
         os.getenv(
@@ -29,30 +48,42 @@ def _summary_inputs() -> tuple[EnterpriseModelIntelligenceInput, ...]:
             "data/model-performance-registry.jsonl",
         )
     )
+    certified = JsonlCertifiedStatisticsRepository(
+        os.getenv(
+            "INVYRA_CERTIFIED_STATISTICS_PATH",
+            "data/certified-model-statistics.jsonl",
+        )
+    )
+    records_by_registry: dict[str, list] = {}
+    for record in certified.latest_by_identity():
+        records_by_registry.setdefault(record.statistics.registry_id, []).append(record)
+
     confidence_policy = ModelConfidenceGovernancePolicy()
     inputs: list[EnterpriseModelIntelligenceInput] = []
     for entry in registry.all():
-        statistics = ModelPerformanceStatistics(
-            registry_id=entry.registry_id,
-            model_name=entry.model_name,
-            model_version=entry.model_version,
-            forecast_horizon_days=None,
-            eligible_evaluation_count=0,
-            mae=None,
-            rmse=None,
-            mape=None,
-            bias=None,
-            average_accuracy_score=None,
-            average_calibration_gap=None,
-        )
-        inputs.append(
-            EnterpriseModelIntelligenceInput(
-                registry_entry=entry,
-                statistics=statistics,
-                confidence=confidence_policy.assess(entry, statistics),
-                evidence_refs=(),
+        records = records_by_registry.get(entry.registry_id, ())
+        if not records:
+            statistics = _empty_statistics(entry)
+            inputs.append(
+                EnterpriseModelIntelligenceInput(
+                    registry_entry=entry,
+                    statistics=statistics,
+                    confidence=confidence_policy.assess(entry, statistics),
+                    evidence_refs=(),
+                )
             )
-        )
+            continue
+
+        for record in records:
+            statistics = record.statistics
+            inputs.append(
+                EnterpriseModelIntelligenceInput(
+                    registry_entry=entry,
+                    statistics=statistics,
+                    confidence=confidence_policy.assess(entry, statistics),
+                    evidence_refs=record.evidence_refs,
+                )
+            )
     return tuple(inputs)
 
 
