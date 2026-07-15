@@ -88,3 +88,10 @@ def get_history_record(history_id: str) -> dict:
         item,
         history_id=history_id,
     )
+
+
+# Attach E6's independent absolute-path routes before the unchanged app includes
+# this router. Route objects retain their own full paths and tags.
+from invyra_forecasting.api.evaluation_routes import router as evaluation_router  # noqa: E402
+
+router.routes.extend(evaluation_router.routes)
