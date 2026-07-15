@@ -124,4 +124,5 @@ def test_invalid_as_of_timestamp_returns_validation_error(monkeypatch, tmp_path)
         headers={"X-Tenant-Id": "alpha"},
     )
 
-    assert response.status_code == 500
+    assert response.status_code == 400
+    assert "valid ISO-8601 timestamp" in response.json()["detail"]
