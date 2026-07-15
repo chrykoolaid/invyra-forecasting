@@ -12,18 +12,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: python -m pip install --upgrade pip --quiet
-      - run: pip install -e ".[dev]" --quiet
-      - id: pytest
-        continue-on-error: true
-        run: pytest -q --tb=short > pytest.log 2>&1
-      - if: steps.pytest.outcome == 'failure'
-        uses: actions/upload-artifact@v4
-        with:
-          name: e6-pytest-log
-          path: pytest.log
-      - if: steps.pytest.outcome == 'failure'
-        run: cat pytest.log && exit 1
+      - run: python -m pip install --upgrade pip
+      - run: pip install -e ".[dev]"
+      - run: pytest
       - name: Validate Phase 2P deployment readiness
         env:
           INVYRA_FORECASTING_ALLOWED_ORIGINS: https://app.base44.com
