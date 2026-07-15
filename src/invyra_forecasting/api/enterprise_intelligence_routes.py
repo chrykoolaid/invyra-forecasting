@@ -4,7 +4,7 @@ import os
 from datetime import datetime, timezone
 
 try:
-    from fastapi import APIRouter
+    from fastapi import APIRouter, HTTPException
 except ImportError as exc:  # pragma: no cover
     raise RuntimeError(
         "FastAPI is optional. Install API dependencies with: pip install -e '.[api]'"
@@ -59,10 +59,13 @@ def _summary_inputs() -> tuple[EnterpriseModelIntelligenceInput, ...]:
 @router.get("/v1/intelligence/enterprise/summary")
 def get_enterprise_intelligence_summary(as_of_utc: str | None = None) -> dict:
     resolved_as_of = as_of_utc or datetime.now(timezone.utc).isoformat()
-    summary = EnterpriseForecastIntelligenceSummaryService().summarize(
-        _summary_inputs(),
-        as_of_utc=resolved_as_of,
-    )
+    try:
+        summary = EnterpriseForecastIntelligenceSummaryService().summarize(
+            _summary_inputs(),
+            as_of_utc=resolved_as_of,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
     return production_envelope(
         "enterprise_forecast_intelligence_summary",
         summary.to_dict(),
