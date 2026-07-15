@@ -18,5 +18,9 @@ def _stable_v1_resources() -> tuple[str, ...]:
     return _LEGACY_STABLE_RESOURCES() + _E6_STABLE_RESOURCES
 
 
+def __getattr__(name: str):
+    return getattr(_legacy_app, name)
+
+
 _legacy_app._stable_v1_resources = _stable_v1_resources
 app.include_router(evaluation_router)  # noqa: F405
