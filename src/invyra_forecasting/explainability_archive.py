@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from typing import Any, Iterable
 from uuid import uuid4
 
+from invyra_forecasting.api.tenant_context import current_request_id
 from invyra_forecasting.api.tenant_namespace import current_namespace
 from invyra_forecasting.models.contracts import ForecastModelOutput
 
@@ -23,6 +24,7 @@ class HistoricalExplainabilityRecord:
     evidence_refs: tuple[str, ...]
     reasoning_summary: tuple[str, ...] = ()
     supporting_metrics: dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     archived_at_utc: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     advisory_only: bool = True
     read_only: bool = True
@@ -104,7 +106,12 @@ class HistoricalExplainabilityArchiveService:
         archive_id: str | None = None,
         reasoning_summary: Iterable[str] = (),
         supporting_metrics: dict[str, Any] | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> HistoricalExplainabilityRecord:
+        archive_metadata = dict(metadata or {})
+        request_id = current_request_id()
+        if request_id is not None:
+            archive_metadata.setdefault("request_id", request_id)
         record = HistoricalExplainabilityRecord(
             archive_id=archive_id or str(uuid4()),
             history_id=history_id,
@@ -116,6 +123,7 @@ class HistoricalExplainabilityArchiveService:
             evidence_refs=tuple(output.evidence_refs),
             reasoning_summary=tuple(reasoning_summary),
             supporting_metrics=dict(supporting_metrics or {}),
+            metadata=archive_metadata,
         )
         return self._repository.append(record)
 
