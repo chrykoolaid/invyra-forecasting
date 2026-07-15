@@ -75,7 +75,7 @@ def get_evaluation_timeline(evaluation_id: str) -> dict:
     )
 
 
-@router.get("/v1/history/{history_id}/evaluation")
+@router.get("/v1/evaluations/history/{history_id}")
 def get_history_evaluation(history_id: str) -> dict:
     records = _read_service().history_evaluation(history_id)
     if not records:
