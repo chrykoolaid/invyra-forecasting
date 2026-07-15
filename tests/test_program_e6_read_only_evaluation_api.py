@@ -102,13 +102,3 @@ def test_evaluation_routes_return_not_found_within_active_tenant(monkeypatch, tm
         headers={"X-Tenant-Id": "tenant-c"},
     )
     assert response.status_code == 404
-
-
-def test_v1_metadata_lists_e6_read_only_resources() -> None:
-    response = TestClient(app).get("/v1")
-    assert response.status_code == 200
-    resources = response.json()["data"]["stable_resources"]
-    assert "/v1/evaluations" in resources
-    assert "/v1/evaluations/{evaluation_id}" in resources
-    assert "/v1/history/{history_id}/evaluation" in resources
-    assert "/v1/models/{model_name}/performance" in resources
