@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import sys
+
 from invyra_forecasting.api import legacy_app as _legacy_app
 from invyra_forecasting.api.evaluation_routes import router as evaluation_router
-from invyra_forecasting.api.legacy_app import *  # noqa: F403
 
 
 _LEGACY_STABLE_RESOURCES = _legacy_app._stable_v1_resources
@@ -18,9 +19,6 @@ def _stable_v1_resources() -> tuple[str, ...]:
     return _LEGACY_STABLE_RESOURCES() + _E6_STABLE_RESOURCES
 
 
-def __getattr__(name: str):
-    return getattr(_legacy_app, name)
-
-
 _legacy_app._stable_v1_resources = _stable_v1_resources
-app.include_router(evaluation_router)  # noqa: F405
+_legacy_app.app.include_router(evaluation_router)
+sys.modules[__name__] = _legacy_app
