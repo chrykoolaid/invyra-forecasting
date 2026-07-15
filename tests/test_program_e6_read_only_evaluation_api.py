@@ -74,7 +74,7 @@ def test_exposes_evaluation_and_history_timelines(monkeypatch, tmp_path) -> None
     assert evaluation.status_code == 200
     assert evaluation.json()["data"]["total"] == 2
 
-    history = client.get("/v1/history/history-1/evaluation", headers=headers)
+    history = client.get("/v1/evaluations/history/history-1", headers=headers)
     assert history.status_code == 200
     assert history.json()["data"]["history_id"] == "history-1"
     assert history.json()["data"]["total"] == 2
