@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from typing import Any, Iterable
 from uuid import uuid4
 
+from invyra_forecasting.api.tenant_context import current_request_id
 from invyra_forecasting.api.tenant_namespace import current_namespace
 
 
@@ -155,6 +156,11 @@ class ForecastHistoryService:
         evidence_refs: Iterable[str] = (),
         metadata: dict[str, Any] | None = None,
     ) -> ForecastHistoryRecord:
+        record_metadata = dict(metadata or {})
+        request_id = current_request_id()
+        if request_id is not None:
+            record_metadata.setdefault("request_id", request_id)
+
         record = ForecastHistoryRecord(
             history_id=history_id or str(uuid4()),
             forecast_id=forecast_id,
@@ -167,7 +173,7 @@ class ForecastHistoryService:
             parent_history_id=parent_history_id,
             snapshot_id=snapshot_id,
             evidence_refs=tuple(evidence_refs),
-            metadata=dict(metadata or {}),
+            metadata=record_metadata,
         )
         return self._repository.append(record)
 
