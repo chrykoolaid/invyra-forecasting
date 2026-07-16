@@ -96,6 +96,10 @@ from invyra_forecasting.api.evaluation_routes import router as evaluation_router
 from invyra_forecasting.api.enterprise_intelligence_routes import (  # noqa: E402
     router as enterprise_intelligence_router,
 )
+from invyra_forecasting.api.operational_portfolio_routes import (  # noqa: E402
+    router as operational_portfolio_router,
+)
 
 router.routes.extend(evaluation_router.routes)
 router.routes.extend(enterprise_intelligence_router.routes)
+router.routes.extend(operational_portfolio_router.routes)
