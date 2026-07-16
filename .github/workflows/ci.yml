@@ -8,5 +8,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - run: PYTHONPATH=src pytest tests/test_executive_intelligence_brief.py -x -q --tb=short
+      - run: |
+          git clone -q --branch agent/program-g7-executive-intelligence-brief https://github.com/chrykoolaid/invyra-forecasting.git repo
+          cd repo
+          PYTHONPATH=src pytest tests/test_executive_intelligence_brief.py -x -q --tb=short
