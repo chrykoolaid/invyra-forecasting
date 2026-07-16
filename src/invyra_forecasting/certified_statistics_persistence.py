@@ -109,8 +109,17 @@ class InMemoryCertifiedStatisticsRepository:
         )
 
     def latest_by_identity(self) -> tuple[CertifiedModelPerformanceStatisticsRecord, ...]:
+        return self.latest_by_identity_as_of(None)
+
+    def latest_by_identity_as_of(
+        self,
+        as_of_utc: str | None,
+    ) -> tuple[CertifiedModelPerformanceStatisticsRecord, ...]:
+        cutoff = None if as_of_utc is None else _parse_timestamp(as_of_utc)
         latest: dict[tuple[str, int | None], CertifiedModelPerformanceStatisticsRecord] = {}
         for record in self.all():
+            if cutoff is not None and _parse_timestamp(record.certified_at_utc) > cutoff:
+                continue
             existing = latest.get(record.identity)
             if existing is None or (record.certified_at_utc, record.record_id) > (
                 existing.certified_at_utc,

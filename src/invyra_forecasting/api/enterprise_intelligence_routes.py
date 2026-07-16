@@ -17,6 +17,7 @@ from invyra_forecasting.enterprise_intelligence_summary import (
     EnterpriseForecastIntelligenceSummaryService,
     EnterpriseModelIntelligenceInput,
 )
+from invyra_forecasting.enterprise_portfolio_comparison import EnterprisePortfolioComparisonService
 from invyra_forecasting.enterprise_portfolio_risk import EnterprisePortfolioRiskPolicy
 from invyra_forecasting.model_confidence_governance import ModelConfidenceGovernancePolicy
 from invyra_forecasting.model_performance_registry import JsonlModelPerformanceRegistry
@@ -41,7 +42,7 @@ def _empty_statistics(entry) -> ModelPerformanceStatistics:
     )
 
 
-def _summary_inputs() -> tuple[EnterpriseModelIntelligenceInput, ...]:
+def _summary_inputs(as_of_utc: str | None = None) -> tuple[EnterpriseModelIntelligenceInput, ...]:
     registry = JsonlModelPerformanceRegistry(
         os.getenv("INVYRA_MODEL_PERFORMANCE_REGISTRY_PATH", "data/model-performance-registry.jsonl")
     )
@@ -49,7 +50,7 @@ def _summary_inputs() -> tuple[EnterpriseModelIntelligenceInput, ...]:
         os.getenv("INVYRA_CERTIFIED_STATISTICS_PATH", "data/certified-model-statistics.jsonl")
     )
     records_by_registry: dict[str, list] = {}
-    for record in certified.latest_by_identity():
+    for record in certified.latest_by_identity_as_of(as_of_utc):
         records_by_registry.setdefault(record.statistics.registry_id, []).append(record)
 
     confidence_policy = ModelConfidenceGovernancePolicy()
@@ -79,7 +80,7 @@ def _summary_inputs() -> tuple[EnterpriseModelIntelligenceInput, ...]:
 def _summary(as_of_utc: str | None):
     resolved_as_of = as_of_utc or datetime.now(timezone.utc).isoformat()
     return EnterpriseForecastIntelligenceSummaryService().summarize(
-        _summary_inputs(), as_of_utc=resolved_as_of
+        _summary_inputs(resolved_as_of), as_of_utc=resolved_as_of
     )
 
 
@@ -113,3 +114,18 @@ def get_enterprise_portfolio_risks(as_of_utc: str | None = None) -> dict:
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     return production_envelope("enterprise_portfolio_risk_signals", assessment.to_dict())
+
+
+@router.get("/v1/intelligence/enterprise/compare")
+def get_enterprise_portfolio_comparison(
+    baseline_as_of_utc: str,
+    current_as_of_utc: str,
+) -> dict:
+    try:
+        comparison = EnterprisePortfolioComparisonService().compare(
+            _summary(baseline_as_of_utc),
+            _summary(current_as_of_utc),
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return production_envelope("enterprise_portfolio_comparison", comparison.to_dict())
