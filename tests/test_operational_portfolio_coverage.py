@@ -74,20 +74,20 @@ def test_empty_portfolio_is_unavailable_without_invented_ratios() -> None:
     ("covered", "expected"),
     [
         (1, OperationalPortfolioCoverageStatus.LIMITED),
-        (2, OperationalPortfolioCoverageStatus.DEVELOPING),
-        (3, OperationalPortfolioCoverageStatus.ESTABLISHED),
-        (4, OperationalPortfolioCoverageStatus.COMPLETE),
+        (3, OperationalPortfolioCoverageStatus.DEVELOPING),
+        (4, OperationalPortfolioCoverageStatus.ESTABLISHED),
+        (5, OperationalPortfolioCoverageStatus.COMPLETE),
     ],
 )
 def test_fixed_coverage_thresholds_are_deterministic(covered, expected) -> None:
     records = tuple(
         _record(f"history-{index}", evidence=index <= covered, snapshot=index <= covered)
-        for index in range(1, 5)
+        for index in range(1, 6)
     )
     result = _assessment(records)
     assert result.status is expected
-    assert result.evidence_coverage_ratio == covered / 4
-    assert result.snapshot_coverage_ratio == covered / 4
+    assert result.evidence_coverage_ratio == covered / 5
+    assert result.snapshot_coverage_ratio == covered / 5
     assert result.item_count == 1
     assert result.location_count == 1
     assert result.item_location_count == 1
