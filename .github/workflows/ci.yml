@@ -14,4 +14,8 @@ jobs:
           python-version: "3.11"
       - run: python -m pip install -q --upgrade pip
       - run: pip install -q -e ".[dev]"
-      - run: pytest tests/test_operational_portfolio_api.py -vv -s --tb=long
+      - run: |
+          pytest tests/test_operational_portfolio_api.py -vv -s --tb=long > /tmp/h2-test.log 2>&1 || {
+            tail -n 80 /tmp/h2-test.log
+            exit 1
+          }
