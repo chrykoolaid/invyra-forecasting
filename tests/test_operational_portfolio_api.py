@@ -1,9 +1,8 @@
-from fastapi import HTTPException
+from fastapi.testclient import TestClient
 
 from invyra_forecasting.api.app import app
-from invyra_forecasting.api.operational_portfolio_routes import (
-    get_operational_forecast_portfolio_summary,
-)
+
+client = TestClient(app)
 
 
 def test_operational_portfolio_route_is_get_only_and_registered() -> None:
@@ -18,8 +17,13 @@ def test_operational_portfolio_route_is_get_only_and_registered() -> None:
 
 def test_empty_durable_history_returns_honest_read_only_summary(tmp_path, monkeypatch) -> None:
     monkeypatch.setenv("INVYRA_FORECAST_HISTORY_DIR", str(tmp_path / "history"))
-    response = get_operational_forecast_portfolio_summary("2026-07-16T00:00:00+00:00")
-    data = response["data"]
+    response = client.get(
+        "/v1/intelligence/operational/portfolio/summary",
+        params={"as_of_utc": "2026-07-16T00:00:00+00:00"},
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    data = payload["data"]
     assert data["forecast_record_count"] == 0
     assert data["model_usage_distribution"] == {}
     assert data["advisory_only"] is True
@@ -29,10 +33,9 @@ def test_empty_durable_history_returns_honest_read_only_summary(tmp_path, monkey
 
 def test_invalid_as_of_timestamp_returns_controlled_bad_request(tmp_path, monkeypatch) -> None:
     monkeypatch.setenv("INVYRA_FORECAST_HISTORY_DIR", str(tmp_path / "history"))
-    try:
-        get_operational_forecast_portfolio_summary("2026-07-16T00:00:00")
-    except HTTPException as exc:
-        assert exc.status_code == 400
-        assert "UTC offset" in str(exc.detail)
-    else:  # pragma: no cover
-        raise AssertionError("invalid timestamp should return HTTP 400")
+    response = client.get(
+        "/v1/intelligence/operational/portfolio/summary",
+        params={"as_of_utc": "2026-07-16T00:00:00"},
+    )
+    assert response.status_code == 400
+    assert "UTC offset" in response.json()["detail"]
