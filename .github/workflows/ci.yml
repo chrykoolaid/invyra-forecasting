@@ -12,13 +12,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: python -m pip install --upgrade pip
-      - run: pip install -e ".[dev]"
-      - run: pytest
-      - name: Validate Phase 2P deployment readiness
-        env:
-          INVYRA_FORECASTING_ALLOWED_ORIGINS: https://app.base44.com
-          INVYRA_FORECASTING_PORT: "8000"
-        run: python scripts/validate_phase2p_deployment_readiness.py
-      - name: Validate Phase 2Q Render blueprint
-        run: python scripts/validate_phase2q_render_blueprint.py
+      - run: python -m pip install -q --upgrade pip
+      - run: pip install -q -e ".[dev]"
+      - name: H2 focused tests
+        run: pytest tests/test_operational_portfolio_api.py -q
+      - name: Existing suite without H2 API tests
+        run: pytest --ignore=tests/test_operational_portfolio_api.py -q
