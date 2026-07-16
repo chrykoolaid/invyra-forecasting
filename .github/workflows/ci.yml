@@ -9,6 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
+          python -m pip install -q pytest
           git clone -q --branch agent/program-g7-executive-intelligence-brief https://github.com/chrykoolaid/invyra-forecasting.git repo
           cd repo
-          PYTHONPATH=src pytest tests/test_executive_intelligence_brief.py -x -q --tb=short
+          PYTHONPATH=src python -m pytest tests/test_executive_intelligence_brief.py -x -q --tb=short
