@@ -80,7 +80,11 @@ def test_summarizes_operational_history_without_recalculating_forecasts() -> Non
     assert summary.unique_item_location_count == 2
     assert summary.evidence_linked_record_count == 2
     assert summary.snapshot_linked_record_count == 1
-    assert summary.model_usage_distribution == {
+    assert summary.model_usage_distribution == (
+        ("moving-average:1.0", 1),
+        ("seasonal-naive:1.0", 1),
+    )
+    assert summary.to_dict()["model_usage_distribution"] == {
         "moving-average:1.0": 1,
         "seasonal-naive:1.0": 1,
     }
@@ -97,18 +101,20 @@ def test_empty_history_produces_honest_zero_summary() -> None:
         )
     assert summary.forecast_record_count == 0
     assert summary.unique_item_count == 0
-    assert summary.model_usage_distribution == {}
+    assert summary.model_usage_distribution == ()
+    assert summary.to_dict()["model_usage_distribution"] == {}
     assert summary.history_refs == ()
     assert summary.evidence_refs == ()
 
 
-def test_summary_contract_is_immutable_and_requires_offset_timestamp() -> None:
+def test_summary_contract_is_deeply_immutable_and_requires_offset_timestamp() -> None:
     with _tenant("tenant-a"):
         summary = OperationalForecastPortfolioSummaryService().summarize(
             (), as_of_utc="2026-07-10T00:00:00+00:00"
         )
     with pytest.raises(FrozenInstanceError):
         summary.forecast_record_count = 1
+    assert isinstance(summary.model_usage_distribution, tuple)
     with pytest.raises(ValueError, match="UTC offset"):
         OperationalForecastPortfolioSummaryService().summarize(
             (), as_of_utc="2026-07-10T00:00:00"
