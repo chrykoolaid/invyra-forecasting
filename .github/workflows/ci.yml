@@ -12,11 +12,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: python -m pip install -q --upgrade pip
-      - run: pip install -q -e ".[dev]"
-      - name: H2 route registration
-        run: pytest tests/test_operational_portfolio_api.py::test_operational_portfolio_route_is_get_only_and_registered -q
-      - name: H2 empty history response
-        run: pytest tests/test_operational_portfolio_api.py::test_empty_durable_history_returns_honest_read_only_summary -q
-      - name: H2 invalid timestamp response
-        run: pytest tests/test_operational_portfolio_api.py::test_invalid_as_of_timestamp_returns_controlled_bad_request -q
+      - run: python -m pip install --upgrade pip
+      - run: pip install -e ".[dev]"
+      - run: pytest
+      - name: Validate Phase 2P deployment readiness
+        env:
+          INVYRA_FORECASTING_ALLOWED_ORIGINS: https://app.base44.com
+          INVYRA_FORECASTING_PORT: "8000"
+        run: python scripts/validate_phase2p_deployment_readiness.py
+      - name: Validate Phase 2Q Render blueprint
+        run: python scripts/validate_phase2q_render_blueprint.py
