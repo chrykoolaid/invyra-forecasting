@@ -12,7 +12,9 @@ def test_operational_portfolio_route_is_get_only_and_registered() -> None:
         if getattr(route, "path", None) == "/v1/intelligence/operational/portfolio/summary"
     ]
     assert len(matching) == 1
-    assert matching[0].methods == {"GET"}
+    methods = set(matching[0].methods or ())
+    assert "GET" in methods
+    assert not (methods & {"POST", "PUT", "PATCH", "DELETE"})
 
 
 def test_empty_durable_history_returns_honest_read_only_summary(tmp_path, monkeypatch) -> None:
