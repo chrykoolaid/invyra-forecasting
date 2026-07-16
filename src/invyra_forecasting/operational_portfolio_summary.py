@@ -20,7 +20,7 @@ class OperationalForecastPortfolioSummary:
     unique_item_location_count: int
     evidence_linked_record_count: int
     snapshot_linked_record_count: int
-    model_usage_distribution: dict[str, int]
+    model_usage_distribution: tuple[tuple[str, int], ...]
     history_refs: tuple[str, ...]
     evidence_refs: tuple[str, ...]
     schema_version: str = OPERATIONAL_PORTFOLIO_SUMMARY_SCHEMA_VERSION
@@ -30,6 +30,7 @@ class OperationalForecastPortfolioSummary:
 
     def to_dict(self) -> dict[str, Any]:
         payload = asdict(self)
+        payload["model_usage_distribution"] = dict(self.model_usage_distribution)
         payload["history_refs"] = list(self.history_refs)
         payload["evidence_refs"] = list(self.evidence_refs)
         return payload
@@ -72,7 +73,7 @@ class OperationalForecastPortfolioSummaryService:
             unique_item_location_count=len(item_locations),
             evidence_linked_record_count=sum(bool(record.evidence_refs) for record in eligible),
             snapshot_linked_record_count=sum(record.snapshot_id is not None for record in eligible),
-            model_usage_distribution=dict(sorted(model_usage.items())),
+            model_usage_distribution=tuple(sorted(model_usage.items())),
             history_refs=tuple(record.history_id for record in eligible),
             evidence_refs=tuple(sorted({ref for record in eligible for ref in record.evidence_refs})),
         )
