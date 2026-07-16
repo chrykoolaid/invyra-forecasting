@@ -19,6 +19,7 @@ from invyra_forecasting.enterprise_intelligence_summary import (
 )
 from invyra_forecasting.enterprise_portfolio_comparison import EnterprisePortfolioComparisonService
 from invyra_forecasting.enterprise_portfolio_risk import EnterprisePortfolioRiskPolicy
+from invyra_forecasting.executive_intelligence_brief import ExecutiveIntelligenceBriefService
 from invyra_forecasting.model_confidence_governance import ModelConfidenceGovernancePolicy
 from invyra_forecasting.model_performance_registry import JsonlModelPerformanceRegistry
 from invyra_forecasting.model_performance_statistics import ModelPerformanceStatistics
@@ -129,3 +130,25 @@ def get_enterprise_portfolio_comparison(
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     return production_envelope("enterprise_portfolio_comparison", comparison.to_dict())
+
+
+@router.get("/v1/intelligence/enterprise/brief")
+def get_executive_intelligence_brief(
+    as_of_utc: str | None = None,
+    baseline_as_of_utc: str | None = None,
+) -> dict:
+    try:
+        summary = _summary(as_of_utc)
+        health = EnterpriseForecastHealthPolicy().classify(summary)
+        risks = EnterprisePortfolioRiskPolicy().assess(health)
+        comparison = None
+        if baseline_as_of_utc is not None:
+            comparison = EnterprisePortfolioComparisonService().compare(
+                _summary(baseline_as_of_utc), summary
+            )
+        brief = ExecutiveIntelligenceBriefService().compose(
+            summary, health, risks, comparison
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return production_envelope("executive_intelligence_brief", brief.to_dict())
