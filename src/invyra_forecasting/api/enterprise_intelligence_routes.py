@@ -17,6 +17,7 @@ from invyra_forecasting.enterprise_intelligence_summary import (
     EnterpriseForecastIntelligenceSummaryService,
     EnterpriseModelIntelligenceInput,
 )
+from invyra_forecasting.enterprise_portfolio_risk import EnterprisePortfolioRiskPolicy
 from invyra_forecasting.model_confidence_governance import ModelConfidenceGovernancePolicy
 from invyra_forecasting.model_performance_registry import JsonlModelPerformanceRegistry
 from invyra_forecasting.model_performance_statistics import ModelPerformanceStatistics
@@ -102,3 +103,13 @@ def get_enterprise_forecast_health(as_of_utc: str | None = None) -> dict:
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     return production_envelope("enterprise_forecast_health", health.to_dict())
+
+
+@router.get("/v1/intelligence/enterprise/risks")
+def get_enterprise_portfolio_risks(as_of_utc: str | None = None) -> dict:
+    try:
+        health = EnterpriseForecastHealthPolicy().classify(_summary(as_of_utc))
+        assessment = EnterprisePortfolioRiskPolicy().assess(health)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return production_envelope("enterprise_portfolio_risk_signals", assessment.to_dict())
