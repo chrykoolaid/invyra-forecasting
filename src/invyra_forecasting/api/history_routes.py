@@ -92,6 +92,7 @@ def get_history_record(history_id: str) -> dict:
 
 # Attach independent absolute-path read-only routes before the unchanged app
 # includes this router. Route objects retain their own full paths and tags.
+from invyra_forecasting.api.decision_review_routes import router as decision_review_router  # noqa: E402
 from invyra_forecasting.api.evaluation_routes import router as evaluation_router  # noqa: E402
 from invyra_forecasting.api.enterprise_intelligence_routes import (  # noqa: E402
     router as enterprise_intelligence_router,
@@ -103,3 +104,4 @@ from invyra_forecasting.api.operational_portfolio_routes import (  # noqa: E402
 router.routes.extend(evaluation_router.routes)
 router.routes.extend(enterprise_intelligence_router.routes)
 router.routes.extend(operational_portfolio_router.routes)
+router.routes.extend(decision_review_router.routes)
